@@ -1,4 +1,4 @@
-package com.sobremesa.birdwatching;
+package com.sobremesa.birdwatching.activities;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -18,6 +18,7 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
+import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
 
 
 public class MainActivity extends Activity {
@@ -206,7 +207,8 @@ public class MainActivity extends Activity {
         Log.d("lng", mLocation.getLongitude()+"");
 
         if( isNetworkConnected() )
-            ;//fetchRecordings(String.valueOf(mLocation.getLatitude()), String.valueOf(mLocation.getLongitude()));
+            new DownloadSightingsTask().execute(mLocation.getLatitude(), mLocation.getLongitude());
+            //fetchRecordings(String.valueOf(mLocation.getLatitude()), String.valueOf(mLocation.getLongitude()));
         else
             showConnectionAlert();
     }
