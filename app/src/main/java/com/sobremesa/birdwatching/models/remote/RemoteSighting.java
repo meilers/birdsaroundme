@@ -19,7 +19,7 @@ public class RemoteSighting extends BaseRemoteModel implements Parcelable {
     private String sciName;
 
     @Expose
-    private Integer howMany;
+    private Integer howMany = 1;
 
     @Expose
     private Double lat;
@@ -32,19 +32,19 @@ public class RemoteSighting extends BaseRemoteModel implements Parcelable {
     private String locID;
 
     @Expose
-    private String locName;
+    private String locName = "";
 
     @Expose
-    private Boolean locationPrivate;
+    private Boolean locationPrivate = false;
 
     @Expose
-    private String obsDt;
+    private String obsDt = "";
 
     @Expose
-    private Boolean obsReviewed;
+    private Boolean obsReviewed = false;
 
     @Expose
-    private Boolean obsValid;
+    private Boolean obsValid = false;
 
 
 

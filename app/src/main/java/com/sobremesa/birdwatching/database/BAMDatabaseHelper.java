@@ -20,6 +20,7 @@ public class BAMDatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase database) {
         SightingTable.onCreate(database);
+        BirdImageTable.onCreate(database);
     }
 
     // Method is called during an upgrade of the database,
@@ -28,6 +29,7 @@ public class BAMDatabaseHelper extends SQLiteOpenHelper {
     public void onUpgrade(SQLiteDatabase database, int oldVersion,
                           int newVersion) {
         SightingTable.onUpgrade(database, oldVersion, newVersion);
+        BirdImageTable.onUpgrade(database, oldVersion, newVersion);
     }
 
     @Override

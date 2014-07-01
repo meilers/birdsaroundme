@@ -11,6 +11,7 @@ import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -18,10 +19,11 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
+import com.sobremesa.birdwatching.fragments.BirdsFragment;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
 
 
-public class MainActivity extends Activity {
+public class MainActivity extends FragmentActivity {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     private static final String KEY_IN_RESOLUTION = "is_in_resolution";
@@ -121,6 +123,8 @@ public class MainActivity extends Activity {
         if (savedInstanceState != null) {
             mIsInResolution = savedInstanceState.getBoolean(KEY_IN_RESOLUTION, false);
         }
+
+        getSupportFragmentManager().beginTransaction().add(BirdsFragment.newInstance(), BirdsFragment.TAG).commit();
     }
 
     /**

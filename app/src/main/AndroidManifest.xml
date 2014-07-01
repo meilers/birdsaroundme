@@ -30,7 +30,7 @@
 
         <provider
             android:name=".providers.BAMContentProvider"
-            android:authorities="com.sobremesa.birdwatching.providers.FAOContentProvider"
+            android:authorities="com.sobremesa.birdwatching.providers.BAMContentProvider"
             android:exported="false" />
     </application>
 

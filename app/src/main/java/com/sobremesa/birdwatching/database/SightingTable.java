@@ -8,7 +8,7 @@ import android.util.Log;
  */
 public class SightingTable {
     // Database table
-    public static final String TABLE_NAME = "bird";
+    public static final String TABLE_NAME = "sighting";
 
     public static final String ID = "_id";
     public static final String COM_NAME = "comName";
@@ -48,7 +48,7 @@ public class SightingTable {
             + ID + " integer primary key autoincrement, "
             + COM_NAME + " text not null, "
             + SCI_NAME + " text not null,"
-            + HOW_MANY + " integer not null,"
+            + HOW_MANY + " integer not null default 1,"
             + LAT + " real not null,"
             + LNG + " real not null,"
             + LOC_ID + " text not null,"

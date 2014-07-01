@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.sobremesa.birdwatching.database.BAMDatabaseHelper;
+import com.sobremesa.birdwatching.database.BirdImageTable;
 import com.sobremesa.birdwatching.database.SightingTable;
 
 import java.util.HashMap;
@@ -25,36 +26,73 @@ public class BAMContentProvider extends ContentProvider {
     private static final String TAG = BAMContentProvider.class.getSimpleName();
 
     public static final String SCHEME = "content";
-    public static final String AUTHORITY = "com.sobremesa.app.providers.BAMContentProvider";
+    public static final String AUTHORITY = "com.sobremesa.birdwatching.providers.BAMContentProvider";
 
     public static final class Uris {
 
-        public static final Uri SIGHTING_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.SIGHTINGS);
+        public static final Uri SIGHTINGS_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.SIGHTINGS);
+        public static final Uri SIGHTINGS_GROUP_BY_BIRD_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.SIGHTINGS + "/" + "BIRD");
+        public static final Uri BIRD_IMAGES_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.BIRD_IMAGES);
 
     }
 
     public static final class Paths {
         public static final String SIGHTINGS = "sightings";
+        public static final String BIRD_IMAGES = "birdImages";
     }
+
 
     private static final int SIGHTINGS_DIR = 0;
     private static final int SIGHTING_ID = 1;
+    private static final int SIGHTINGS_GROUP_BY_BIRD_DIR = 2;
+    private static final int BIRD_IMAGES_DIR = 3;
+    private static final int BIRD_IMAGE_ID = 4;
+
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
+    private static HashMap<String, String> sSightingsProjectionMap;
+    private static HashMap<String, String> sBirdImagesProjectionMap;
+
+    // mDatabase
+    private BAMDatabaseHelper mDatabase;
+
+
     static {
         sURIMatcher.addURI(AUTHORITY, Paths.SIGHTINGS, SIGHTINGS_DIR);
+        sURIMatcher.addURI(AUTHORITY, Paths.SIGHTINGS + "/BIRD", SIGHTINGS_GROUP_BY_BIRD_DIR);
         sURIMatcher.addURI(AUTHORITY, Paths.SIGHTINGS + "/#", SIGHTING_ID);
+        sURIMatcher.addURI(AUTHORITY, Paths.BIRD_IMAGES, BIRD_IMAGES_DIR);
+        sURIMatcher.addURI(AUTHORITY, Paths.BIRD_IMAGES + "/#", BIRD_IMAGE_ID);
+
+        // projections
+        sSightingsProjectionMap = new HashMap<String, String>();
+        sSightingsProjectionMap.put(SightingTable.ID, SightingTable.FULL_ID);
+        sSightingsProjectionMap.put(SightingTable.COM_NAME, SightingTable.FULL_COM_NAME);
+        sSightingsProjectionMap.put(SightingTable.SCI_NAME, SightingTable.FULL_SCI_NAME);
+        sSightingsProjectionMap.put(SightingTable.HOW_MANY, SightingTable.FULL_HOW_MANY);
+        sSightingsProjectionMap.put(SightingTable.LAT, SightingTable.FULL_LAT);
+        sSightingsProjectionMap.put(SightingTable.LNG, SightingTable.FULL_LNG);
+        sSightingsProjectionMap.put(SightingTable.LOC_ID, SightingTable.FULL_LOC_ID);
+        sSightingsProjectionMap.put(SightingTable.LOC_NAME, SightingTable.FULL_LOC_NAME);
+        sSightingsProjectionMap.put(SightingTable.LOCATION_PRIVATE, SightingTable.FULL_LOCATION_PRIVATE);
+        sSightingsProjectionMap.put(SightingTable.OBS_DT, SightingTable.FULL_OBS_DT);
+        sSightingsProjectionMap.put(SightingTable.OBS_REVIEWED, SightingTable.FULL_OBS_REVIEWED);
+        sSightingsProjectionMap.put(SightingTable.OBS_VALID, SightingTable.FULL_OBS_VALID);
+
+        sBirdImagesProjectionMap = new HashMap<String, String>();
+        sBirdImagesProjectionMap.put(BirdImageTable.ID, BirdImageTable.FULL_ID);
+        sBirdImagesProjectionMap.put(BirdImageTable.IMAGE_URL, BirdImageTable.FULL_IMAGE_URL);
+        sBirdImagesProjectionMap.put(BirdImageTable.SCI_NAME, BirdImageTable.FULL_SCI_NAME);
     }
 
-    // database
-    private BAMDatabaseHelper database;
+
 
 
 
     @Override
     public boolean onCreate() {
-        database = new BAMDatabaseHelper(getContext());
+        mDatabase = new BAMDatabaseHelper(getContext());
         return false;
     }
 
@@ -77,6 +115,9 @@ public class BAMContentProvider extends ContentProvider {
     public Cursor query(Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
 
+        String groupBy = null;
+
+
         // Uisng SQLiteQueryBuilder instead of query() method
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
 
@@ -89,13 +130,18 @@ public class BAMContentProvider extends ContentProvider {
                 queryBuilder.setTables(SightingTable.TABLE_NAME);
                 break;
 
+            case SIGHTINGS_GROUP_BY_BIRD_DIR:
+                groupBy = SightingTable.SCI_NAME;
+                queryBuilder.setTables(SightingTable.TABLE_NAME);
+                break;
+
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
         }
 
-        SQLiteDatabase db = database.getWritableDatabase();
+        SQLiteDatabase db = mDatabase.getWritableDatabase();
         Cursor cursor = queryBuilder.query(db, projection, selection,
-                selectionArgs, null, null, sortOrder);
+                selectionArgs, groupBy, null, sortOrder);
 
         // make sure that potential listeners are getting notified
         cursor.setNotificationUri(getContext().getContentResolver(), uri);
@@ -107,7 +153,7 @@ public class BAMContentProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         int uriType = sURIMatcher.match(uri);
-        SQLiteDatabase dbConnection = database.getWritableDatabase();
+        SQLiteDatabase dbConnection = mDatabase.getWritableDatabase();
 
         try {
             dbConnection.beginTransaction();
@@ -118,7 +164,7 @@ public class BAMContentProvider extends ContentProvider {
                     final long categoryId = dbConnection.insertOrThrow(
                             SightingTable.TABLE_NAME, null, values);
                     final Uri newSighting = ContentUris.withAppendedId(
-                            Uris.SIGHTING_URI, categoryId);
+                            Uris.SIGHTINGS_URI, categoryId);
                     getContext().getContentResolver().notifyChange(newSighting,
                             null);
                     dbConnection.setTransactionSuccessful();
@@ -141,7 +187,7 @@ public class BAMContentProvider extends ContentProvider {
     public int delete(Uri uri, String selection, String[] selectionArgs) {
         int uriType = sURIMatcher.match(uri);
 
-        final SQLiteDatabase dbConnection = database.getWritableDatabase();
+        final SQLiteDatabase dbConnection = mDatabase.getWritableDatabase();
         int deleteCount = 0;
 
         try {
@@ -178,7 +224,7 @@ public class BAMContentProvider extends ContentProvider {
                       String[] selectionArgs) {
 
         int uriType = sURIMatcher.match(uri);
-        final SQLiteDatabase dbConnection = database.getWritableDatabase();
+        final SQLiteDatabase dbConnection = mDatabase.getWritableDatabase();
         int updateCount = 0;
 
         try {
