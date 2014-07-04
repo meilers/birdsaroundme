@@ -12,6 +12,7 @@ import android.os.Handler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
 /**
  * Created by omegatai on 2014-06-17.
@@ -20,6 +21,7 @@ public class BAMApplication extends Application {
 
     private static Context sContext;
     private static Handler sHandler;
+    private static ImageLoader sImageLoader;
 
     private static boolean mActivityVisible;
 
@@ -43,19 +45,21 @@ public class BAMApplication extends Application {
         sHandler = new Handler();
         sContext = getApplicationContext();
 
-//        Drawable placeHolder = getResources().getDrawable(R.drawable.fao_dogs_gray_800);
-//
-//        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder().
-//                cacheInMemory(true).
-//                cacheOnDisc(true).
-//                showImageForEmptyUri(placeHolder).
-//                showImageOnFail(placeHolder).
-//                showImageOnLoading(placeHolder).build();
-//        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(FAOApplication.getContext())
-//                .defaultDisplayImageOptions(defaultOptions)
-//                .build();
-//
-//        ImageLoader.getInstance().init(config);
+        Drawable placeHolder = getResources().getDrawable(R.drawable.default_bird);
+
+        DisplayImageOptions defaultOptions = new DisplayImageOptions.Builder().
+                cacheInMemory(true).
+                cacheOnDisk(true).
+                imageScaleType(ImageScaleType.EXACTLY).
+                showImageForEmptyUri(placeHolder).
+                showImageOnFail(placeHolder).
+                showImageOnLoading(placeHolder).build();
+        ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(sContext)
+                .defaultDisplayImageOptions(defaultOptions)
+                .build();
+
+        sImageLoader = ImageLoader.getInstance();
+        sImageLoader.init(config);
     }
 
 
@@ -66,6 +70,10 @@ public class BAMApplication extends Application {
 
     public static final Context getContext() {
         return sContext;
+    }
+
+    public static final ImageLoader getImageLoader() {
+        return sImageLoader;
     }
 
     public static SharedPreferences getSharedPreferences() {

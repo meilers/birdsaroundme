@@ -2,19 +2,29 @@ package com.sobremesa.birdwatching.fragments;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
+import com.sobremesa.birdwatching.BAMApplication;
+import com.sobremesa.birdwatching.BAMConstants;
 import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.activities.MainActivity;
+import com.sobremesa.birdwatching.adapters.BirdsAdapter;
+import com.sobremesa.birdwatching.database.BirdImageTable;
 import com.sobremesa.birdwatching.database.SightingTable;
+import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
+import com.sobremesa.birdwatching.services.BirdImageService;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.location.Address;
@@ -51,9 +61,36 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
 
 	public static final String TAG = BirdsFragment.class.getSimpleName();
 
-
+    private ArrayList<RemoteSighting> mBirds;
+    private HashMap<String, RemoteSighting> mBirdMap;
 
 	private CursorLoader mCusorLoader;
+
+    private BirdsAdapter mBirdsAdapter;
+    private GridView mBirdsGv;
+
+    private final BroadcastReceiver mImageBirdReceiver = new BroadcastReceiver() {
+        @Override
+        public synchronized void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION)){
+
+                ArrayList<RemoteSighting> birdsComputed = intent.getExtras().getParcelableArrayList(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_EXTRA);
+
+                for( RemoteSighting birdComputed : birdsComputed )
+                {
+                    RemoteSighting bird = mBirdMap.get(birdComputed.getSciName());
+
+                    if( bird != null )
+                    {
+                        bird.setImages(birdComputed.getImages());
+                    }
+                }
+
+//                mBirdsAdapter.notifyDataSetChanged();
+            }
+        }
+    };
 
 
     public static final BirdsFragment newInstance() {
@@ -72,31 +109,48 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState); 
+		super.onCreate(savedInstanceState);
 
-		Bundle arguments = getArguments();
+        mBirds = new ArrayList<RemoteSighting>();
+        mBirdMap = new HashMap<String, RemoteSighting>();
 
-
+        mBirdsAdapter = new BirdsAdapter(getActivity(), mBirds);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View view = inflater.inflate(R.layout.fragment_birds, container, false);
 
+        mBirdsGv = (GridView)view.findViewById(R.id.bird_gv);
+        mBirdsGv.setAdapter(mBirdsAdapter);
+
+        boolean pauseOnScroll = true; // or true
+        boolean pauseOnFling = true; // or false
+        PauseOnScrollListener listener = new PauseOnScrollListener(BAMApplication.getImageLoader(), pauseOnScroll, pauseOnFling);
+        mBirdsGv.setOnScrollListener(listener);
+
 		return view;
 	}
 	
 	@Override
 	public void onStart() {
-		// TODO Auto-generated method stub
 		super.onStart();
-		
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION);
+        getActivity().registerReceiver(mImageBirdReceiver, filter);
+
 		getLoaderManager().initLoader(0, null, this);
 	}
 
+    @Override
+    public void onStop() {
+        super.onStop();
 
+        getActivity().unregisterReceiver(mImageBirdReceiver);
+    }
 
-	@Override
+    @Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		mCusorLoader = new CursorLoader(getActivity(), BAMContentProvider.Uris.SIGHTINGS_GROUP_BY_BIRD_URI, SightingTable.ALL_COLUMNS, null, null, null);
 
@@ -106,26 +160,65 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 
+        Log.d("LOAD FINISHED", "ee");
         if( cursor != null )
         {
+            mBirds.clear();
+            mBirdMap.clear();
+
             for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                RemoteSighting sighting = new RemoteSighting(cursor);
-
-
-                int count = cursor.getCount();
-
-
+                RemoteSighting bird = new RemoteSighting(cursor);
+                mBirds.add(bird);
+                mBirdMap.put(bird.getSciName(), bird);
             }
 
+            // Populate Existing Images
+            populateImagesToBirds();
 
+            // Update Grid
+            mBirdsAdapter.notifyDataSetChanged();
 
-
+            if( cursor.getCount() > 0 ) {
+                // Get More Images in the meantime
+                Intent i = new Intent(getActivity(), BirdImageService.class);
+                i.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, mBirds);
+                i.setAction(Intent.ACTION_SYNC);
+                getActivity().startService(i);
+            }
         }
 	}
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+
+
+    private void populateImagesToBirds()
+    {
+
+        for( RemoteSighting bird : mBirds )
+        {
+            populateBirdImages(bird);
+        }
+    }
+
+    private void populateBirdImages(RemoteSighting bird)
+    {
+        ArrayList<RemoteBirdImage> birdImages = new ArrayList<RemoteBirdImage>();
+        Cursor imageCursor = getActivity().getContentResolver().query(BAMContentProvider.Uris.BIRD_IMAGES_URI, BirdImageTable.ALL_COLUMNS, BirdImageTable.SCI_NAME + "=?", new String[] { bird.getSciName()}, null);
+
+        if( imageCursor != null ) {
+            for (imageCursor.moveToFirst(); !imageCursor.isAfterLast(); imageCursor.moveToNext()) {
+                RemoteBirdImage image = new RemoteBirdImage(imageCursor);
+                birdImages.add(image);
+            }
+        }
+
+        imageCursor.close();
+
+        bird.setImages(birdImages);
     }
 
 

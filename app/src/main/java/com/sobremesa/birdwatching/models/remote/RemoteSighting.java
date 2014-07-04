@@ -7,6 +7,9 @@ import android.os.Parcelable;
 import com.google.gson.annotations.Expose;
 import com.sobremesa.birdwatching.database.SightingTable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by Michael on 2014-03-17.
  */
@@ -46,6 +49,8 @@ public class RemoteSighting extends BaseRemoteModel implements Parcelable {
     @Expose
     private Boolean obsValid = false;
 
+
+    private ArrayList<RemoteBirdImage> mImages = new ArrayList<RemoteBirdImage>();
 
 
 
@@ -107,6 +112,8 @@ public class RemoteSighting extends BaseRemoteModel implements Parcelable {
         dest.writeString(this.getObsDt());
         dest.writeInt(this.getObsReviewed() ? 1:0);
         dest.writeInt(this.getObsValid() ? 1:0);
+
+        dest.writeList(this.getImages());
     }
 
 
@@ -124,6 +131,7 @@ public class RemoteSighting extends BaseRemoteModel implements Parcelable {
         setObsReviewed(in.readInt() == 1);
         setObsValid(in.readInt() == 1);
 
+        setImages(in.readArrayList(RemoteBirdImage.class.getClassLoader()));
     }
 
     public static Creator<RemoteSighting> CREATOR = new Creator<RemoteSighting>() {
@@ -226,5 +234,13 @@ public class RemoteSighting extends BaseRemoteModel implements Parcelable {
 
     public void setObsValid(Boolean obsValid) {
         this.obsValid = obsValid;
+    }
+
+    public ArrayList<RemoteBirdImage> getImages() {
+        return mImages;
+    }
+
+    public void setImages(ArrayList<RemoteBirdImage> mImages) {
+        this.mImages = mImages;
     }
 }

@@ -32,6 +32,9 @@
             android:name=".providers.BAMContentProvider"
             android:authorities="com.sobremesa.birdwatching.providers.BAMContentProvider"
             android:exported="false" />
+
+        <service android:name=".services.BirdImageService" >
+        </service>
     </application>
 
 </manifest>

@@ -92,7 +92,7 @@ public class BAMContentProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mDatabase = new BAMDatabaseHelper(getContext());
+        mDatabase = BAMDatabaseHelper.getInstance(getContext());
         return false;
     }
 
@@ -104,6 +104,12 @@ public class BAMContentProvider extends ContentProvider {
                 return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + Paths.SIGHTINGS;
             case SIGHTINGS_DIR:
                 return ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + Paths.SIGHTINGS;
+
+            case BIRD_IMAGE_ID:
+                return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + Paths.BIRD_IMAGES;
+            case BIRD_IMAGES_DIR:
+                return ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + Paths.BIRD_IMAGES;
+
 
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -133,6 +139,13 @@ public class BAMContentProvider extends ContentProvider {
             case SIGHTINGS_GROUP_BY_BIRD_DIR:
                 groupBy = SightingTable.SCI_NAME;
                 queryBuilder.setTables(SightingTable.TABLE_NAME);
+                break;
+
+            case BIRD_IMAGE_ID:
+                queryBuilder.appendWhere(BirdImageTable.ID + "="
+                        + uri.getLastPathSegment());
+            case BIRD_IMAGES_DIR:
+                queryBuilder.setTables(BirdImageTable.TABLE_NAME);
                 break;
 
             default:
@@ -165,10 +178,21 @@ public class BAMContentProvider extends ContentProvider {
                             SightingTable.TABLE_NAME, null, values);
                     final Uri newSighting = ContentUris.withAppendedId(
                             Uris.SIGHTINGS_URI, categoryId);
-                    getContext().getContentResolver().notifyChange(newSighting,
-                            null);
+//                    getContext().getContentResolver().notifyChange(newSighting,
+//                            null);
                     dbConnection.setTransactionSuccessful();
                     return newSighting;
+
+                case BIRD_IMAGES_DIR:
+                case BIRD_IMAGE_ID:
+                    final long birdImageId = dbConnection.insertOrThrow(
+                            BirdImageTable.TABLE_NAME, null, values);
+                    final Uri newBird = ContentUris.withAppendedId(
+                            Uris.SIGHTINGS_URI, birdImageId);
+//                    getContext().getContentResolver().notifyChange(newBird,
+//                            null);
+                    dbConnection.setTransactionSuccessful();
+                    return newBird;
 
 
                 default:
@@ -205,6 +229,18 @@ public class BAMContentProvider extends ContentProvider {
                                     .getPathSegments().get(1)});
                     dbConnection.setTransactionSuccessful();
                     break;
+
+                case BIRD_IMAGES_DIR :
+                    deleteCount = dbConnection.delete(BirdImageTable.TABLE_NAME,
+                            selection, selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+                case BIRD_IMAGE_ID :
+                    deleteCount = dbConnection.delete(BirdImageTable.TABLE_NAME,
+                            BirdImageTable.ID + "=?", new String[]{uri
+                                    .getPathSegments().get(1)});
+                    dbConnection.setTransactionSuccessful();
+                    break;
                 default :
                     throw new IllegalArgumentException("Unsupported URI:" + uri);
             }
@@ -213,7 +249,7 @@ public class BAMContentProvider extends ContentProvider {
         }
 
         if (deleteCount > 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
+//            getContext().getContentResolver().notifyChange(uri, null);
         }
 
         return deleteCount;
@@ -252,6 +288,26 @@ public class BAMContentProvider extends ContentProvider {
                     dbConnection.setTransactionSuccessful();
                     break;
 
+                case BIRD_IMAGES_DIR :
+                    updateCount = dbConnection.update(BirdImageTable.TABLE_NAME,
+                            values, selection, selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+                case BIRD_IMAGE_ID :
+                    final Long birdImageId = ContentUris.parseId(uri);
+                    updateCount = dbConnection.update(
+                            BirdImageTable.TABLE_NAME,
+                            values,
+                            BirdImageTable.ID
+                                    + "="
+                                    + birdImageId
+                                    + (TextUtils.isEmpty(selection)
+                                    ? ""
+                                    : " AND (" + selection + ")"),
+                            selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+
 
                 default :
                     throw new IllegalArgumentException("Unsupported URI:" + uri);
@@ -261,7 +317,7 @@ public class BAMContentProvider extends ContentProvider {
         }
 
         if (updateCount > 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
+//            getContext().getContentResolver().notifyChange(uri, null);
         }
 
         return updateCount;

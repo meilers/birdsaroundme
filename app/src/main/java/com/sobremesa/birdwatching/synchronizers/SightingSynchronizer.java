@@ -85,9 +85,10 @@ public class SightingSynchronizer extends BaseSynchronizer<RemoteSighting>{
         }
 
         try {
-            if( operations.size() > 0 )
+            if( inserts.size() > 0 || operations.size() > 0 )
             {
                 context.getContentResolver().applyBatch(BAMContentProvider.AUTHORITY, operations);
+                context.getContentResolver().notifyChange(BAMContentProvider.Uris.SIGHTINGS_URI, null);
             }
 
         } catch (RemoteException e) {
@@ -141,7 +142,7 @@ public class SightingSynchronizer extends BaseSynchronizer<RemoteSighting>{
     private int doBulkInsertOptimised(ContentValues values[]) {
 
         Context context = BAMApplication.getContext();
-        BAMDatabaseHelper helper = new BAMDatabaseHelper(context);
+        BAMDatabaseHelper helper = BAMDatabaseHelper.getInstance(context);
         SQLiteDatabase db = helper.getWritableDatabase();
 
         DatabaseUtils.InsertHelper inserter = new DatabaseUtils.InsertHelper(db, SightingTable.TABLE_NAME);

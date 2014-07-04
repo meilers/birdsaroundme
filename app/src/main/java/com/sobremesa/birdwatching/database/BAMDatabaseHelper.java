@@ -9,12 +9,28 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 public class BAMDatabaseHelper extends SQLiteOpenHelper {
 
+    private static BAMDatabaseHelper mInstance = null;
+
     public static final String DATABASE_NAME = "birdsaroundme.db";
     private static final int DATABASE_VERSION = 1;
 
-    public BAMDatabaseHelper(Context context) {
+    public static BAMDatabaseHelper getInstance(Context ctx) {
+
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (mInstance == null) {
+            mInstance = new BAMDatabaseHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
+
+
+    private BAMDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
+
+
 
     // Method is called during creation of the database
     @Override

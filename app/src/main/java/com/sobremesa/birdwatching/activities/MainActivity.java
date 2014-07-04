@@ -19,6 +19,7 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
+import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.fragments.BirdsFragment;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
 
@@ -124,7 +125,9 @@ public class MainActivity extends FragmentActivity {
             mIsInResolution = savedInstanceState.getBoolean(KEY_IN_RESOLUTION, false);
         }
 
-        getSupportFragmentManager().beginTransaction().add(BirdsFragment.newInstance(), BirdsFragment.TAG).commit();
+        setContentView(R.layout.activity_main);
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.content_frame, BirdsFragment.newInstance(), BirdsFragment.TAG).commit();
     }
 
     /**
@@ -234,14 +237,14 @@ public class MainActivity extends FragmentActivity {
         alertDialog.setTitle("No Internet Connection");
 
         // Setting Dialog Message
-        alertDialog.setMessage("You need an internet connection to use Birds Around Me.");
+        alertDialog.setMessage("You need an internet connection to see the latest birds.");
 
         // On pressing Settings button
-        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
+//        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int which) {
+//                finish();
+//            }
+//        });
 
 
         // Showing Alert Message
