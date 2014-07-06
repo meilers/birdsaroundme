@@ -24,8 +24,40 @@
         android:textAllCaps="true"
         android:padding="@dimen/padding_medium"
         android:textStyle="bold"
+        android:shadowColor="@android:color/black"
+        android:shadowDx="0.0"
+        android:shadowDy="0.0"
+        android:shadowRadius="5.0"
         android:layout_height="wrap_content"
         android:gravity="center" />
 
+    <TextView
+        android:id="@+id/list_item_bird_last_seen_tv"
+        android:layout_width="wrap_content"
+        android:layout_gravity="bottom|left"
+        android:textColor="#ffffff"
+        android:padding="@dimen/padding_medium"
+        android:shadowColor="@android:color/black"
+        android:shadowDx="0.0"
+        android:textSize="10sp"
+        android:shadowDy="0.0"
+        android:shadowRadius="2.0"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
+
+
+    <TextView
+        android:id="@+id/list_item_bird_distance_tv"
+        android:layout_width="wrap_content"
+        android:layout_gravity="bottom|right"
+        android:textColor="#ffffff"
+        android:textSize="10sp"
+        android:padding="@dimen/padding_medium"
+        android:shadowColor="@android:color/black"
+        android:shadowDx="0.0"
+        android:shadowDy="0.0"
+        android:shadowRadius="2.0"
+        android:layout_height="wrap_content"
+        android:gravity="center" />
 
 </com.sobremesa.birdwatching.views.SquareFrameLayout>

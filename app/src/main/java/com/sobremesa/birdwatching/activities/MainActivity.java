@@ -23,6 +23,7 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationClient;
 import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.fragments.BirdsFragment;
+import com.sobremesa.birdwatching.managers.LocationManager;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
 
 import java.io.IOException;
@@ -208,9 +209,9 @@ public class MainActivity extends FragmentActivity {
 
     private void retrieveLocation()
     {
-        Log.d("retrieve location", "ouaip");
-
         mLocation = mLocationClient.getLastLocation();
+        LocationManager.INSTANCE.setLocation(mLocation);
+
         locationUpdated();
     }
 

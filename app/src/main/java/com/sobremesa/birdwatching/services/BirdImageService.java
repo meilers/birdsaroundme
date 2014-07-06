@@ -157,24 +157,16 @@ public class BirdImageService extends IntentService {
 
                     ++itr;
 
-                    if( itr % 3 == 2 || itr == birds.size() )
+                    if( itr % 8 == 7 || itr == birds.size() )
                     {
-                        final Intent broadcastIntent = new Intent();
+                        Intent broadcastIntent = new Intent();
                         Bundle extras = new Bundle();
                         extras.putParcelableArrayList(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_EXTRA, birdsComputed);
 
                         broadcastIntent.setAction(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION);
                         broadcastIntent.putExtras(extras);
 
-                        try {
-                            BAMApplication.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    sendBroadcast(broadcastIntent);
-                                }
-                            });
-                        }
-                        catch (Exception e) {}
+                        sendBroadcast(broadcastIntent);
 
                         birdsComputed.clear();
                     }
