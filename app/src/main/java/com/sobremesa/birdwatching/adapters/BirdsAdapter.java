@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -60,8 +61,14 @@ public class BirdsAdapter extends BaseAdapter
             convertView = inflater.inflate(R.layout.list_item_bird, null);
         }
 
-        ImageView iv = (ImageView)convertView.findViewById(R.id.list_item_bird_iv);
 
+        // Name
+        TextView nameTv = (TextView)convertView.findViewById(R.id.list_item_bird_tv);
+        nameTv.setText(bird.getComName());
+
+
+        // Images
+        ImageView iv = (ImageView)convertView.findViewById(R.id.list_item_bird_iv);
 
         List<RemoteBirdImage> images = bird.getImages();
         if( images != null && images.size() > 0 )
@@ -86,6 +93,11 @@ public class BirdsAdapter extends BaseAdapter
         }
         else
             iv.setImageDrawable(mContext.getResources().getDrawable(R.drawable.default_bird));
+
+
+
+
+
 
         return convertView;
     }

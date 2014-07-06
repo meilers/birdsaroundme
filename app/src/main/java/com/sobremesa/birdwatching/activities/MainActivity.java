@@ -7,6 +7,8 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.IntentSender.SendIntentException;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -22,6 +24,10 @@ import com.google.android.gms.location.LocationClient;
 import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.fragments.BirdsFragment;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 
 public class MainActivity extends FragmentActivity {
@@ -210,8 +216,21 @@ public class MainActivity extends FragmentActivity {
 
     private void locationUpdated()
     {
-        Log.d("lat", mLocation.getLatitude()+"");
-        Log.d("lng", mLocation.getLongitude()+"");
+        Geocoder gcd = new Geocoder(this, Locale.getDefault());
+        List<Address> addresses;
+        try {
+            addresses = gcd.getFromLocation(mLocation.getLatitude(), mLocation.getLongitude(), 1);
+
+            if (addresses.size() > 0) {
+                String city = addresses.get(0).getLocality();
+                getActionBar().setSubtitle(city + ", lat: " + String.format("%.2f", mLocation.getLatitude()) + ", lng: " + String.format("%.2f", mLocation.getLongitude()));
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
 
         if( isNetworkConnected() )
             new DownloadSightingsTask().execute(mLocation.getLatitude(), mLocation.getLongitude());

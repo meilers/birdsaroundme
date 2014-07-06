@@ -166,12 +166,15 @@ public class BirdImageService extends IntentService {
                         broadcastIntent.setAction(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION);
                         broadcastIntent.putExtras(extras);
 
-                        BAMApplication.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                sendBroadcast(broadcastIntent);
-                            }
-                        });
+                        try {
+                            BAMApplication.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    sendBroadcast(broadcastIntent);
+                                }
+                            });
+                        }
+                        catch (Exception e) {}
 
                         birdsComputed.clear();
                     }

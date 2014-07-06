@@ -35,6 +35,7 @@ import android.media.MediaPlayer.OnBufferingUpdateListener;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnPreparedListener;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -69,6 +70,8 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
     private BirdsAdapter mBirdsAdapter;
     private GridView mBirdsGv;
 
+    private AsyncTask<Void,Void,Void> mPopulateImagesTask;
+
     private final BroadcastReceiver mImageBirdReceiver = new BroadcastReceiver() {
         @Override
         public synchronized void onReceive(Context context, Intent intent) {
@@ -87,7 +90,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
                     }
                 }
 
-//                mBirdsAdapter.notifyDataSetChanged();
+                mBirdsAdapter.notifyDataSetChanged();
             }
         }
     };
@@ -148,6 +151,12 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
         super.onStop();
 
         getActivity().unregisterReceiver(mImageBirdReceiver);
+
+        if( mPopulateImagesTask != null )
+        {
+            mPopulateImagesTask.cancel(true);
+            mPopulateImagesTask = null;
+        }
     }
 
     @Override
@@ -158,9 +167,9 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
 	}
 
 	@Override
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+	public void onLoadFinished(Loader<Cursor> loader, final Cursor cursor) {
 
-        Log.d("LOAD FINISHED", "ee");
+
         if( cursor != null )
         {
             mBirds.clear();
@@ -172,12 +181,31 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
                 mBirdMap.put(bird.getSciName(), bird);
             }
 
-            // Populate Existing Images
-            populateImagesToBirds();
-
             // Update Grid
             mBirdsAdapter.notifyDataSetChanged();
 
+            // Populate Existing Images
+            if( mPopulateImagesTask != null )
+            {
+                mPopulateImagesTask.cancel(true);
+            }
+
+            mPopulateImagesTask = new AsyncTask<Void,Void,Void>()
+            {
+
+                @Override
+                protected Void doInBackground(Void... params) {
+                    // Populate Existing Images
+                    populateImagesToBirds();
+
+                    return null;
+                }
+            };
+
+            mPopulateImagesTask.execute();
+
+
+            // Fetch New Images
             if( cursor.getCount() > 0 ) {
                 // Get More Images in the meantime
                 Intent i = new Intent(getActivity(), BirdImageService.class);
@@ -185,7 +213,18 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
                 i.setAction(Intent.ACTION_SYNC);
                 getActivity().startService(i);
             }
+
+
+            // Update Title
+            MainActivity act = (MainActivity)getActivity();
+
+            if( act != null )
+            {
+                act.setTitle(cursor.getCount() + " Birds Around Me (within 50 km)");
+            }
         }
+
+
 	}
 
     @Override
