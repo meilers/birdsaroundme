@@ -69,9 +69,8 @@ public class BirdImageService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
 
-        Context context = BAMApplication.getContext();
 
-        Log.d("sttt", "starting");
+        Context context = BAMApplication.getContext();
 
         if (intent.getAction().equals(Intent.ACTION_SYNC))
         {
@@ -157,8 +156,9 @@ public class BirdImageService extends IntentService {
 
                     ++itr;
 
-                    if( itr % 8 == 7 || itr == birds.size() )
+                    if( itr % 9 == 8 || itr == birds.size() )
                     {
+                        Log.d("broadcasting itr", itr+"");
                         Intent broadcastIntent = new Intent();
                         Bundle extras = new Bundle();
                         extras.putParcelableArrayList(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_EXTRA, birdsComputed);

@@ -1,63 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.sobremesa.birdwatching.views.SquareFrameLayout
-     xmlns:android="http://schemas.android.com/apk/res/android"
+<com.sobremesa.birdwatching.views.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#a9a9a9"
-    android:layout_margin="0dp" >
+    android:layout_margin="0dp"
+    android:background="#a9a9a9">
 
-    <ImageView
-        android:id="@+id/list_item_bird_iv"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
-        android:scaleType="centerCrop"
-        android:adjustViewBounds="true"
-        tools:ignore="ContentDescription" />
+        android:foreground="#44000000"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/list_item_bird_iv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/list_item_bird_tv"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:textColor="#ffffff"
-        android:textAllCaps="true"
+        android:gravity="center"
         android:padding="@dimen/padding_medium"
-        android:textStyle="bold"
         android:shadowColor="@android:color/black"
         android:shadowDx="0.0"
         android:shadowDy="0.0"
         android:shadowRadius="5.0"
-        android:layout_height="wrap_content"
-        android:gravity="center" />
+        android:textAllCaps="true"
+        android:textColor="#ffffff"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/list_item_bird_last_seen_tv"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|left"
-        android:textColor="#ffffff"
+        android:gravity="center"
         android:padding="@dimen/padding_medium"
         android:shadowColor="@android:color/black"
         android:shadowDx="0.0"
-        android:textSize="10sp"
         android:shadowDy="0.0"
         android:shadowRadius="2.0"
-        android:layout_height="wrap_content"
-        android:gravity="center" />
+        android:textColor="#ffffff"
+        android:textSize="10sp" />
 
 
     <TextView
         android:id="@+id/list_item_bird_distance_tv"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
-        android:textColor="#ffffff"
-        android:textSize="10sp"
+        android:gravity="center"
         android:padding="@dimen/padding_medium"
         android:shadowColor="@android:color/black"
         android:shadowDx="0.0"
         android:shadowDy="0.0"
         android:shadowRadius="2.0"
-        android:layout_height="wrap_content"
-        android:gravity="center" />
+        android:textColor="#ffffff"
+        android:textSize="10sp" />
 
 </com.sobremesa.birdwatching.views.SquareFrameLayout>

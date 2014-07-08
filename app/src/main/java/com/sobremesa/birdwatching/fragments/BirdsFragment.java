@@ -16,10 +16,14 @@ import com.sobremesa.birdwatching.activities.MainActivity;
 import com.sobremesa.birdwatching.adapters.BirdsAdapter;
 import com.sobremesa.birdwatching.database.BirdImageTable;
 import com.sobremesa.birdwatching.database.SightingTable;
+import com.sobremesa.birdwatching.listeners.LocationListener;
+import com.sobremesa.birdwatching.managers.LocationManager;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
 import com.sobremesa.birdwatching.services.BirdImageService;
+import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
+import com.sobremesa.birdwatching.tasks.PopulateBirdImagesTask;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -31,6 +35,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnBufferingUpdateListener;
@@ -60,7 +65,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
+public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, LocationListener {
 
 	public static final String TAG = BirdsFragment.class.getSimpleName();
 
@@ -73,47 +78,52 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
     private BirdsAdapter mBirdsAdapter;
     private GridView mBirdsGv;
 
-    private AsyncTask<Void,Void,Void> mPopulateImagesTask;
+    private DownloadSightingsTask mDownloadSightingsTask;
+    private PopulateBirdImagesTask mPopulateImagesTask;
 
     private final BroadcastReceiver mImageBirdReceiver = new BroadcastReceiver() {
+
+        private boolean mIsUpdateGv;
+
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if(action.equals(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION)){
 
                 ArrayList<RemoteSighting> birdsComputed = intent.getExtras().getParcelableArrayList(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_EXTRA);
-                boolean isUpdateGv = false;
-                int currentGvFirstVisiblePosition = mBirdsGv.getFirstVisiblePosition();
-                int currentGvLastVisiblePosition = mBirdsGv.getLastVisiblePosition();
+                setBirdImages(birdsComputed);
 
-                for( RemoteSighting birdComputed : birdsComputed )
+
+                mIsUpdateGv = false;
+                int firstPosition = mBirdsGv.getFirstVisiblePosition();
+                int lastPosition = mBirdsGv.getLastVisiblePosition();
+                Integer position = 0;
+
+                for( RemoteSighting bird : birdsComputed )
                 {
-                    RemoteSighting bird = mBirdMap.get(birdComputed.getSciName());
-                    Integer position = mBirdPositionMap.get(birdComputed.getSciName());
+                    position = mBirdPositionMap.get(bird.getSciName());
+                    Log.d("position", position+"");
 
-                    if( bird != null )
+                    if( position != null )
                     {
-                        bird.setImages(birdComputed.getImages());
-
-                        if( position != null )
-                        {
-
-                            if( position >= currentGvFirstVisiblePosition && position <= currentGvLastVisiblePosition )
-                                isUpdateGv = true;
-                        }
+                        if( position >= firstPosition && position < lastPosition )
+                            mIsUpdateGv = true;
                     }
                 }
 
-                if( isUpdateGv ) {
+                BAMApplication.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
 
-                    BAMApplication.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                        if( mIsUpdateGv ) {
+
+                            Log.d("lalalalalalalala ", "lalalala");
 
                             mBirdsAdapter.notifyDataSetChanged();
+
                         }
-                    });
-                }
+                    }
+                });
             }
         }
     };
@@ -164,6 +174,11 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
         getActivity().registerReceiver(mImageBirdReceiver, filter);
 
 		getLoaderManager().initLoader(0, null, this);
+
+        syncBirds();
+
+
+        LocationManager.INSTANCE.addLocationListener(this);
 	}
 
     @Override
@@ -172,12 +187,59 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
 
         getActivity().unregisterReceiver(mImageBirdReceiver);
 
+
+        if( mDownloadSightingsTask != null )
+        {
+            mDownloadSightingsTask.cancel(true);
+            mDownloadSightingsTask = null;
+        }
+
         if( mPopulateImagesTask != null )
         {
             mPopulateImagesTask.cancel(true);
             mPopulateImagesTask = null;
         }
+
+        LocationManager.INSTANCE.removeLocationListener(this);
     }
+
+    private void syncBirds()
+    {
+        Location location = LocationManager.INSTANCE.getLocation();
+
+        if( location != null )
+        {
+            mDownloadSightingsTask = new DownloadSightingsTask()
+            {
+                @Override
+                protected void onPostExecute(Void aVoid) {
+                    super.onPostExecute(aVoid);
+
+                    Log.d("aaaaa fkdsjla", "fjdsiofs");
+                    Log.d("aaaaa fkdsjla", "fjdsiofs");
+
+                    final Intent intent = new Intent(getActivity(), BirdImageService.class);
+                    intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, mBirds);
+                    intent.setAction(Intent.ACTION_SYNC);
+
+                    getActivity().startService(intent);
+                }
+            };
+            mDownloadSightingsTask.execute(location.getLatitude(), location.getLongitude());
+        }
+    }
+
+    private synchronized void setBirdImages(List<RemoteSighting> birds)
+    {
+        for( RemoteSighting bird : birds )
+        {
+            RemoteSighting birdInGridView = mBirdMap.get(bird.getSciName());
+            birdInGridView.setImages(bird.getImages());
+        }
+    }
+
+
+
 
     @Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -214,40 +276,31 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
                     ++i;
                 }
 
-                // Update Grid (no images)
-                mBirdsAdapter.notifyDataSetChanged();
 
                 // Populate Existing Images
                 if( mPopulateImagesTask != null )
                     mPopulateImagesTask.cancel(true);
 
-                mPopulateImagesTask = new AsyncTask<Void,Void,Void>()
+                mPopulateImagesTask = new PopulateBirdImagesTask()
                 {
-
                     @Override
-                    protected Void doInBackground(Void... params) {
-                        // Populate Existing Images
-                        populateImagesToBirds();
+                    protected void onPostExecute(List<RemoteSighting> birds) {
+                        super.onPostExecute(birds);
 
-                        return null;
-                    }
+                        setBirdImages(birds);
 
-                    @Override
-                    protected void onPostExecute(Void aVoid) {
-                        super.onPostExecute(aVoid);
+                        BAMApplication.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.d("updating gv", "fdsfds");
 
-                        // Update Grid (with images)
-                        mBirdsAdapter.notifyDataSetChanged();
-
-                        // Now fetch more images
-                        getActivity().startService(intent);
+                                mBirdsAdapter.notifyDataSetChanged();
+                            }
+                        });
                     }
                 };
 
-                // Before executing the task, make sure no service is running
-                // To prevent concurrent bird image handling
-                getActivity().stopService(intent);
-                mPopulateImagesTask.execute();
+                mPopulateImagesTask.execute(mBirds);
 
 
                 // Update Title
@@ -270,32 +323,10 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor> {
 
 
 
-    private void populateImagesToBirds()
-    {
+    @Override
+    public void locationEventReceived() {
 
-        for( RemoteSighting bird : mBirds )
-        {
-            populateBirdImages(bird);
-        }
+
+        syncBirds();
     }
-
-    private void populateBirdImages(RemoteSighting bird)
-    {
-        ArrayList<RemoteBirdImage> birdImages = new ArrayList<RemoteBirdImage>();
-        Cursor imageCursor = getActivity().getContentResolver().query(BAMContentProvider.Uris.BIRD_IMAGES_URI, BirdImageTable.ALL_COLUMNS, BirdImageTable.SCI_NAME + "=?", new String[] { bird.getSciName()}, null);
-
-        if( imageCursor != null ) {
-            for (imageCursor.moveToFirst(); !imageCursor.isAfterLast(); imageCursor.moveToNext()) {
-                RemoteBirdImage image = new RemoteBirdImage(imageCursor);
-                birdImages.add(image);
-            }
-        }
-
-        imageCursor.close();
-
-        bird.setImages(birdImages);
-    }
-
-
-
 }

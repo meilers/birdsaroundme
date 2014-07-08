@@ -233,10 +233,10 @@ public class MainActivity extends FragmentActivity {
 
 
 
-        if( isNetworkConnected() )
-            new DownloadSightingsTask().execute(mLocation.getLatitude(), mLocation.getLongitude());
-            //fetchRecordings(String.valueOf(mLocation.getLatitude()), String.valueOf(mLocation.getLongitude()));
-        else
+        if( !isNetworkConnected() )
+//            new DownloadSightingsTask().execute(mLocation.getLatitude(), mLocation.getLongitude());
+//            //fetchRecordings(String.valueOf(mLocation.getLatitude()), String.valueOf(mLocation.getLongitude()));
+//        else
             showConnectionAlert();
     }
 
