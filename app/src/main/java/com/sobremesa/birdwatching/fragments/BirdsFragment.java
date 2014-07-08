@@ -212,17 +212,15 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
             mDownloadSightingsTask = new DownloadSightingsTask()
             {
                 @Override
-                protected void onPostExecute(Void aVoid) {
-                    super.onPostExecute(aVoid);
-
-                    Log.d("aaaaa fkdsjla", "fjdsiofs");
-                    Log.d("aaaaa fkdsjla", "fjdsiofs");
+                protected void onPostExecute(ArrayList<RemoteSighting> remoteSightings) {
+                    super.onPostExecute(remoteSightings);
 
                     final Intent intent = new Intent(getActivity(), BirdImageService.class);
-                    intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, mBirds);
+                    intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, remoteSightings);
                     intent.setAction(Intent.ACTION_SYNC);
 
                     getActivity().startService(intent);
+
                 }
             };
             mDownloadSightingsTask.execute(location.getLatitude(), location.getLongitude());
@@ -243,7 +241,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
     @Override
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		mCusorLoader = new CursorLoader(getActivity(), BAMContentProvider.Uris.SIGHTINGS_GROUP_BY_BIRD_URI, SightingTable.ALL_COLUMNS, null, null, null);
+		mCusorLoader = new CursorLoader(getActivity(), BAMContentProvider.Uris.SIGHTINGS_GROUP_BY_BIRD_URI, SightingTable.ALL_COLUMNS, null, null, SightingTable.OBS_DT + " DESC");
 
 		return mCusorLoader;
 	}

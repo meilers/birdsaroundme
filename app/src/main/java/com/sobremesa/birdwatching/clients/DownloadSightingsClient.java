@@ -2,6 +2,7 @@ package com.sobremesa.birdwatching.clients;
 
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.http.GET;
@@ -12,6 +13,6 @@ import retrofit.http.Query;
  */
 public interface DownloadSightingsClient {
     @GET("/recent")
-    List<RemoteSighting> downloadSightings(@Query("lat") Double lat, @Query("lng") Double lng, @Query("dist") Integer dist, @Query("back") Integer back, @Query("fmt") String format);
+    ArrayList<RemoteSighting> downloadSightings(@Query("lat") Double lat, @Query("lng") Double lng, @Query("dist") Integer dist, @Query("back") Integer back, @Query("fmt") String format);
 }
 
