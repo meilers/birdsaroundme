@@ -8,20 +8,33 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.Tracker;
 
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
+import java.util.HashMap;
+
 /**
  * Created by omegatai on 2014-06-17.
  */
 public class BAMApplication extends Application {
 
+
+    public enum TrackerName {
+        APP_TRACKER, // Tracker used only in this app.
+//        GLOBAL_TRACKER, // Tracker used by all the apps from a company. eg: roll-up tracking.
+//        ECOMMERCE_TRACKER, // Tracker used by all ecommerce transactions from a company.
+    }
+
+
     private static Context sContext;
     private static Handler sHandler;
     private static ImageLoader sImageLoader;
+    private static HashMap<TrackerName, Tracker> sGATrackers = new HashMap<TrackerName, Tracker>();
 
     private static boolean mActivityVisible;
 
@@ -83,6 +96,17 @@ public class BAMApplication extends Application {
 
     public static String getResourceString(int resource) {
         return sContext.getResources().getString(resource);
+    }
+
+    public static synchronized Tracker getGATracker(TrackerName trackerId) {
+        if (!sGATrackers.containsKey(trackerId)) {
+
+            GoogleAnalytics analytics = GoogleAnalytics.getInstance(sContext);
+            Tracker t = (trackerId == TrackerName.APP_TRACKER) ? analytics.newTracker(R.xml.app_tracker) : null;
+            sGATrackers.put(trackerId, t);
+
+        }
+        return sGATrackers.get(trackerId);
     }
 
 }

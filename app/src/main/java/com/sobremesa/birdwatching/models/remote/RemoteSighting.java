@@ -1,19 +1,84 @@
 package com.sobremesa.birdwatching.models.remote;
 
 import android.database.Cursor;
+import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.sobremesa.birdwatching.database.SightingTable;
+import com.sobremesa.birdwatching.managers.LocationManager;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by Michael on 2014-03-17.
  */
 public class RemoteSighting extends BaseRemoteModel implements Parcelable {
+
+
+    public static class DateComparator implements Comparator<RemoteSighting> {
+        @Override
+        public int compare(RemoteSighting o1, RemoteSighting o2) {
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat(
+                    "yyyy-MM-dd HH:mm", Locale.getDefault());
+            Date date1;
+            Date date2;
+
+            try {
+                date1 = dateFormat.parse(o1.getObsDt());
+                date2 = dateFormat.parse(o2.getObsDt());
+
+                return date2.compareTo(date1);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+            return 0;
+        }
+    }
+
+    public static class NameComparator implements Comparator<RemoteSighting> {
+        @Override
+        public int compare(RemoteSighting o1, RemoteSighting o2) {
+
+            return o1.getComName().toLowerCase().compareTo(o2.getComName().toLowerCase());
+        }
+    }
+
+    public static class DistanceComparator implements Comparator<RemoteSighting> {
+        @Override
+        public int compare(RemoteSighting o1, RemoteSighting o2) {
+
+            Location curLocation = LocationManager.INSTANCE.getLocation();
+
+
+
+            int dist1 = (int)distFrom((float)curLocation.getLatitude(), (float)curLocation.getLongitude(), o1.getLat().floatValue(), o1.getLng().floatValue());
+            int dist2 = (int)distFrom((float)curLocation.getLatitude(), (float)curLocation.getLongitude(), o2.getLat().floatValue(), o2.getLng().floatValue());
+
+            return dist1 - dist2;
+        }
+    }
+
+    public static float distFrom(float lat1, float lng1, float lat2, float lng2) {
+        double earthRadius = 6371; //kilometers
+        double dLat = Math.toRadians(lat2-lat1);
+        double dLng = Math.toRadians(lng2-lng1);
+        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLng/2) * Math.sin(dLng/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        float dist = (float) (earthRadius * c);
+
+        return dist;
+    }
 
     @Expose
     private String comName;

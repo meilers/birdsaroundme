@@ -32,26 +32,6 @@ import retrofit.RetrofitError;
  */
 public class DownloadSightingsTask extends AsyncTask<Double, Void, ArrayList<RemoteSighting>> {
 
-    public class CustomComparator implements Comparator<RemoteSighting> {
-        @Override
-        public int compare(RemoteSighting o1, RemoteSighting o2) {
-
-            SimpleDateFormat dateFormat = new SimpleDateFormat(
-                    "yyyy-MM-dd HH:mm", Locale.getDefault());
-            Date date1;
-            Date date2;
-
-            try {
-                date1 = dateFormat.parse(o1.getObsDt());
-                date2 = dateFormat.parse(o2.getObsDt());
-
-                return date2.compareTo(date1);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            return 0;
-        }
-    }
 
 
     @Override
@@ -63,7 +43,7 @@ public class DownloadSightingsTask extends AsyncTask<Double, Void, ArrayList<Rem
 
         try {
             ArrayList<RemoteSighting> sightings = client.downloadSightings(params[0], params[1], 50, 30, "json");
-            Collections.sort(sightings, new CustomComparator());
+            Collections.sort(sightings, new RemoteSighting.DateComparator());
 
 
             Cursor localSightingCursor = context.getContentResolver().query(BAMContentProvider.Uris.SIGHTINGS_URI, SightingTable.ALL_COLUMNS, null, null, null);

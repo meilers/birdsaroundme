@@ -14,6 +14,7 @@ import android.util.Log;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -107,31 +108,46 @@ public class SightingSynchronizer extends BaseSynchronizer<RemoteSighting>{
     @Override
     protected ContentValues getContentValuesForRemoteEntity(RemoteSighting remoteSighting) {
         ContentValues values = new ContentValues();
-
         SimpleDateFormat dateFormat = new SimpleDateFormat(
                 "yyyy-MM-dd HH:mm", Locale.getDefault());
+
+        // Primary keys (never null)
+        String sciName = remoteSighting.getSciName();
+        String locId = remoteSighting.getLocID();
         Date date = null;
+
         try {
             date = dateFormat.parse(remoteSighting.getObsDt());
 
-            values.put(SightingTable.COM_NAME, remoteSighting.getComName());
-            values.put(SightingTable.SCI_NAME, remoteSighting.getSciName());
-            values.put(SightingTable.HOW_MANY, remoteSighting.getHowMany());
-            values.put(SightingTable.LAT, remoteSighting.getLat());
-            values.put(SightingTable.LNG, remoteSighting.getLng());
-            values.put(SightingTable.LOC_ID, remoteSighting.getLocID());
-            values.put(SightingTable.LOC_NAME, remoteSighting.getLocName());
-            values.put(SightingTable.LOCATION_PRIVATE, remoteSighting.getLocationPrivate() ? 1:0);
-            values.put(SightingTable.OBS_DT, dateFormat.format(date));
-            values.put(SightingTable.OBS_REVIEWED, remoteSighting.getObsReviewed() ? 1:0);
-            values.put(SightingTable.OBS_VALID, remoteSighting.getObsValid() ? 1:0);
-
-            return values;
-        } catch (ParseException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            date = new Date();
         }
 
-        return null;
+        values.put(SightingTable.SCI_NAME, sciName);
+        values.put(SightingTable.LOC_ID, locId);
+        values.put(SightingTable.OBS_DT, dateFormat.format(date));
+
+
+        // Optional
+        String comName = remoteSighting.getComName();
+        String locName = remoteSighting.getLocName();
+        Integer howMany = remoteSighting.getHowMany();
+        Double lat = remoteSighting.getLat();
+        Double lng = remoteSighting.getLng();
+        Boolean locPrivate = remoteSighting.getLocationPrivate();
+        Boolean obsReviewed = remoteSighting.getObsReviewed();
+        Boolean obsValid = remoteSighting.getObsValid();
+
+        values.put(SightingTable.COM_NAME, comName != null ? comName : "");
+        values.put(SightingTable.HOW_MANY, howMany != null ? howMany : 1);
+        values.put(SightingTable.LAT, lat != null ? lat : 0.0);
+        values.put(SightingTable.LNG, lng != null ? lng : 0.0);
+        values.put(SightingTable.LOC_NAME, locName != null ? locName : "");
+        values.put(SightingTable.LOCATION_PRIVATE, locPrivate != null ? (locPrivate ? 1:0) : 0);
+        values.put(SightingTable.OBS_REVIEWED, obsReviewed != null ? (obsReviewed ? 1:0) : 0);
+        values.put(SightingTable.OBS_VALID, obsValid != null ? (obsValid ? 1:0) : 0);
+
+        return values;
 
 
     }

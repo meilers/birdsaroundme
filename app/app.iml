@@ -62,9 +62,10 @@
     <orderEntry type="jdk" jdkName="Android API 19 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" exported="" name="retrofit-1.6.0" level="project" />
-    <orderEntry type="library" exported="" name="play-services-4.2.42" level="project" />
     <orderEntry type="library" exported="" name="gson-2.2.4" level="project" />
+    <orderEntry type="library" exported="" name="play-services-4.3.23" level="project" />
     <orderEntry type="library" exported="" name="support-v4-19.0.1" level="project" />
+    <orderEntry type="library" exported="" name="crashlytics-1.1.11" level="project" />
     <orderEntry type="library" exported="" name="universal-image-loader-1.9.2" level="project" />
   </component>
 </module>

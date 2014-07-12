@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="ga_trackingId">UA-48756104-1</string>
+
+    <bool name="ga_autoActivityTracking">false</bool>
+
+<!--     <string name="com.frankandoak.app.activities.AddressAddActivity">Add Address Activity</string>
+    <string name="com.frankandoak.app.activities.AddressEditActivity">Edit Address Activity</string>
+    <string name="com.frankandoak.app.activities.AddressListActivity">Address List Activity</string>
+    <string name="com.frankandoak.app.activities.AppInfoActivity">App Info Activity</string>
+    <string name="com.frankandoak.app.activities.AuthenticationActivity">Authentication Activity</string>
+    <string name="com.frankandoak.app.activities.CartCheckoutActivity">Cart Checkout Activity</string>
+    <string name="com.frankandoak.app.activities.CreditCardInfoListActivity">Credit Card Info List Activity</string>
+    <string name="com.frankandoak.app.activities.FAQWebViewActivity">FAQ Activity</string>
+    <string name="com.frankandoak.app.activities.ForgotPasswordActivity">Forgot Password Activity</string>
+    <string name="com.frankandoak.app.activities.HowItWorksActivity">How It Works Activity</string>
+    <string name="com.frankandoak.app.activities.JoinTheHuntClubActivity">Join The Hunt Club Activity</string>
+    <string name="com.frankandoak.app.activities.OrderReviewActivity">Order Review Activity</string>
+    <string name="com.frankandoak.app.activities.ProductDetailActivity">Product Detail Activity</string>
+    <string name="com.frankandoak.app.activities.RedeemGiftCardActivity">Redeem Gift Card Activity</string>
+    <string name="com.frankandoak.app.activities.ShippingMethodSelectionActivity">Shipping Method Selection Activity</string>
+    <string name="com.frankandoak.app.activities.ShoppingCartItemListActivity">Shopping Cart Item List Activity</string>
+    <string name="com.frankandoak.app.activities.ShopsActivity">Shops Activity</string>
+    <string name="com.frankandoak.app.activities.SplashScreenActivity">Splash Screen Activity</string>
+    <string name="com.frankandoak.app.activities.StoreActivity">Store Activity</string>
+    <string name="com.frankandoak.app.activities.ZoomInProductDetailActivity">Zoom In Product Detail Activity</string> -->
+
+</resources>

@@ -5,7 +5,9 @@ package com.sobremesa.birdwatching;
  */
 public class BAMConstants {
 
-    public static String RELOAD_BIRD_IMAGES_BROADCAST_ACTION = "com.sobremesa.birdwatching.RELOAD_BIRD_IMAGES";
-    public static String RELOAD_BIRD_IMAGES_BROADCAST_EXTRA = "birds";
+    public final static String SORT_PREF = "sort";
+
+    public final static String RELOAD_BIRD_IMAGES_BROADCAST_ACTION = "com.sobremesa.birdwatching.RELOAD_BIRD_IMAGES";
+    public final static String RELOAD_BIRD_IMAGES_BROADCAST_EXTRA = "birds";
 
 }

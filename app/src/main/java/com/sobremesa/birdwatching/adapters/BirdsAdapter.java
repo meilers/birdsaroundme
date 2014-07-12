@@ -84,7 +84,7 @@ public class BirdsAdapter extends BaseAdapter
 
         // Name
         holder.mComNameTv.setText(bird.getComName());
-
+        Log.d("the name", "name:"+bird.getComName());
 
         // Image
 
@@ -133,14 +133,22 @@ public class BirdsAdapter extends BaseAdapter
 
             long diff = today.getTimeInMillis() - thatDay.getTimeInMillis();
             long days = diff / (24 * 60 * 60 * 1000);
+            long hours = diff / (60 * 60 * 1000);
 
             if( days < 1 )
             {
-                long hours = diff / (60 * 60 * 1000);
-                holder.mLastSeenTv.setText(hours + " hours ago");
+                if( hours < 2 )
+                    holder.mLastSeenTv.setText("Seen " + hours + " hour ago");
+                else
+                    holder.mLastSeenTv.setText("Seen " + hours + " hours ago");
             }
-            else
-                holder.mLastSeenTv.setText(days + " days ago");
+            else {
+
+                if( days < 2 )
+                    holder.mLastSeenTv.setText("Seen " + days + " day ago");
+                else
+                    holder.mLastSeenTv.setText("Seen " + days + " days ago");
+            }
 
 
         } catch (ParseException e) {

@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Birds Around Me</string>
+
+    <string-array name="sort_bys_array">
+        <item>Date</item>
+        <item>Name</item>
+        <item>Distance</item>
+    </string-array>
+
+
+
 </resources>

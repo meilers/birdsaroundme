@@ -16,6 +16,7 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
+import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -128,6 +129,7 @@ public class MainActivity extends FragmentActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Crashlytics.start(this);
         if (savedInstanceState != null) {
             mIsInResolution = savedInstanceState.getBoolean(KEY_IN_RESOLUTION, false);
         }
@@ -230,7 +232,7 @@ public class MainActivity extends FragmentActivity {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
+        catch (Exception e) {}
 
 
         if( !isNetworkConnected() )

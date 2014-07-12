@@ -12,6 +12,7 @@ import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
 import com.sobremesa.birdwatching.synchronizers.BirdImageSynchronizer;
 import com.sobremesa.birdwatching.synchronizers.SightingSynchronizer;
+import com.sobremesa.birdwatching.util.AnalyticsUtil;
 import com.sobremesa.birdwatching.util.SyncUtil;
 
 import java.io.InputStream;
@@ -171,6 +172,10 @@ public class BirdImageService extends IntentService {
                         birdsComputed.clear();
                     }
 
+                }
+                else
+                {
+                    AnalyticsUtil.sendEvent("", AnalyticsUtil.Categories.BIRD_IMAGES, AnalyticsUtil.Actions.SYNC, "Error: No Image for com name: " + bird.getComName() );
                 }
 
             }

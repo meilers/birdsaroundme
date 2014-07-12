@@ -28,7 +28,8 @@ public abstract class BaseSynchronizer <T extends BaseRemoteModel> {
     public void synchronize(Context context, List<T> items, Cursor localItems, int remoteIdentifierColumn) {
         Map<String, T> remoteEntities = new HashMap<String, T>();
         for (T entity : items) {
-            remoteEntities.put(entity.getIdentifier(), entity);
+            if( entity.getIdentifier() != null )
+                remoteEntities.put(entity.getIdentifier(), entity);
         }
 
         List<T> updates = new ArrayList<T>();
@@ -61,7 +62,8 @@ public abstract class BaseSynchronizer <T extends BaseRemoteModel> {
     public void synchronize(Context context, List<T> items, Cursor localItems, int remoteIdentifierColumn, int remoteIdentifierColumn2) {
         Map<String, T> remoteEntities = new HashMap<String, T>();
         for (T entity : items) {
-            remoteEntities.put(entity.getIdentifier() + "_" + entity.getIdentifier2(), entity);
+            if( entity.getIdentifier() != null && entity.getIdentifier2() != null )
+                remoteEntities.put(entity.getIdentifier() + "_" + entity.getIdentifier2(), entity);
         }
 
         List<T> updates = new ArrayList<T>();
@@ -96,7 +98,8 @@ public abstract class BaseSynchronizer <T extends BaseRemoteModel> {
     public void synchronize(Context context, List<T> items, Cursor localItems, int remoteIdentifierColumn, int remoteIdentifierColumn2, int remoteIdentifierColumn3) {
         Map<String, T> remoteEntities = new HashMap<String, T>();
         for (T entity : items) {
-            remoteEntities.put(entity.getIdentifier() + "_" + entity.getIdentifier2() + "_" + entity.getIdentifier3(), entity);
+            if( entity.getIdentifier() != null && entity.getIdentifier2() != null && entity.getIdentifier3() != null )
+                remoteEntities.put(entity.getIdentifier() + "_" + entity.getIdentifier2() + "_" + entity.getIdentifier3(), entity);
         }
 
         List<T> updates = new ArrayList<T>();

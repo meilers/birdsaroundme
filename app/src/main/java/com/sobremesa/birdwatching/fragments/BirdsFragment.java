@@ -1,48 +1,39 @@
 package com.sobremesa.birdwatching.fragments;
 
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Random;
 
-import com.nostra13.universalimageloader.core.listener.PauseOnScrollListener;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.BAMConstants;
 import com.sobremesa.birdwatching.R;
+import com.sobremesa.birdwatching.activities.BirdActivity;
 import com.sobremesa.birdwatching.activities.MainActivity;
 import com.sobremesa.birdwatching.adapters.BirdsAdapter;
-import com.sobremesa.birdwatching.database.BirdImageTable;
+import com.sobremesa.birdwatching.adapters.SortsByAdapter;
 import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.listeners.LocationListener;
+import com.sobremesa.birdwatching.listeners.SettingsListener;
 import com.sobremesa.birdwatching.managers.LocationManager;
-import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
+import com.sobremesa.birdwatching.managers.SettingsManager;
+import com.sobremesa.birdwatching.models.Settings;
+import com.sobremesa.birdwatching.models.SortByType;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
 import com.sobremesa.birdwatching.services.BirdImageService;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
 import com.sobremesa.birdwatching.tasks.PopulateBirdImagesTask;
+import com.sobremesa.birdwatching.util.AnalyticsUtil;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.location.Address;
-import android.location.Geocoder;
 import android.location.Location;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnBufferingUpdateListener;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -50,22 +41,17 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.CursorAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
-public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, LocationListener {
+public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, LocationListener, SettingsListener {
 
 	public static final String TAG = BirdsFragment.class.getSimpleName();
 
@@ -80,6 +66,8 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
     private DownloadSightingsTask mDownloadSightingsTask;
     private PopulateBirdImagesTask mPopulateImagesTask;
+
+    private AlertDialog mAlertDialog;
 
     private final BroadcastReceiver mImageBirdReceiver = new BroadcastReceiver() {
 
@@ -116,8 +104,6 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                     public void run() {
 
                         if( mIsUpdateGv ) {
-
-                            Log.d("lalalalalalalala ", "lalalala");
 
                             mBirdsAdapter.notifyDataSetChanged();
 
@@ -160,7 +146,18 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
         mBirdsGv = (GridView)view.findViewById(R.id.bird_gv);
         mBirdsGv.setAdapter(mBirdsAdapter);
+        mBirdsGv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                RemoteSighting bird = mBirds.get(position);
 
+//                Intent intent = new Intent(getActivity(), BirdActivity.class);
+//                intent.putExtra(BirdActivity.Extras.BIRD, bird);
+//                startActivity(intent);
+            }
+        });
+
+        setHasOptionsMenu(true);
 
 		return view;
 	}
@@ -179,6 +176,9 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
 
         LocationManager.INSTANCE.addLocationListener(this);
+        SettingsManager.INSTANCE.addSettingsListener(this);
+
+        AnalyticsUtil.sendView(TAG);
 	}
 
     @Override
@@ -201,6 +201,27 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         }
 
         LocationManager.INSTANCE.removeLocationListener(this);
+        SettingsManager.INSTANCE.removeSettingsListener(this);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+
+        inflater.inflate(R.menu.birds, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId() )
+        {
+            case R.id.action_settings:
+                showSortByDialog();
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void syncBirds()
@@ -215,11 +236,21 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                 protected void onPostExecute(ArrayList<RemoteSighting> remoteSightings) {
                     super.onPostExecute(remoteSightings);
 
-                    final Intent intent = new Intent(getActivity(), BirdImageService.class);
-                    intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, remoteSightings);
-                    intent.setAction(Intent.ACTION_SYNC);
+                    if( remoteSightings != null ) {
+                        if (getActivity() != null) {
+                            final Intent intent = new Intent(getActivity(), BirdImageService.class);
+                            intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, remoteSightings);
+                            intent.setAction(Intent.ACTION_SYNC);
 
-                    getActivity().startService(intent);
+                            getActivity().startService(intent);
+                        }
+                        AnalyticsUtil.sendEvent(TAG, AnalyticsUtil.Categories.SIGHTINGS, AnalyticsUtil.Actions.SYNC, "Number of sightings downloaded: " + remoteSightings.size() );
+                    }
+                    else
+                        AnalyticsUtil.sendEvent(TAG, AnalyticsUtil.Categories.SIGHTINGS, AnalyticsUtil.Actions.SYNC, "Error: Sightings result is null" );
+
+
+
 
                 }
             };
@@ -290,7 +321,23 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                         BAMApplication.runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                Log.d("updating gv", "fdsfds");
+
+                                switch (SettingsManager.INSTANCE.getSettings().getSortBy())
+                                {
+                                    case DATE:
+                                        Collections.sort(mBirds, new RemoteSighting.DateComparator());
+                                        break;
+
+                                    case NAME:
+                                        Collections.sort(mBirds, new RemoteSighting.NameComparator());
+                                        break;
+
+                                    case DISTANCE:
+                                        Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
+                                        break;
+
+                                }
+
 
                                 mBirdsAdapter.notifyDataSetChanged();
                             }
@@ -305,7 +352,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                 MainActivity act = (MainActivity)getActivity();
 
                 if( act != null )
-                    act.setTitle(cursor.getCount() + " Spotted Birds (within 50 km)");
+                    act.setTitle(cursor.getCount() + " Birds (within 50 km)");
             }
 
 
@@ -326,5 +373,95 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
 
         syncBirds();
+    }
+
+
+    private void showSortByDialog()
+    {
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View view = inflater.inflate(R.layout.dialog_list_selection, null);
+
+        // ListView
+        final ListView lv = (ListView) view.findViewById(R.id.dialog_list_selection_lv);
+
+        Resources r = getActivity().getResources();
+        String[] sortBys = r.getStringArray(R.array.sort_bys_array);
+
+        final SortsByAdapter adapter = new SortsByAdapter(getActivity(), R.layout.list_item_dialog_list_selection, sortBys );
+        adapter.setSelectedIndex(SettingsManager.INSTANCE.getSettings().getSortBy().ordinal());
+
+
+        lv.setAdapter(adapter);
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+
+            @Override
+            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
+                adapter.setSelectedIndex(position);
+                adapter.notifyDataSetChanged();
+
+                Settings set = SettingsManager.INSTANCE.getSettings();
+
+                final SortByType sort = SortByType.values()[position];
+                switch( sort )
+                {
+                    case DISTANCE:
+                        set.setSortBy(SortByType.DISTANCE);
+                        break;
+
+                    case NAME:
+                        set.setSortBy(SortByType.NAME);
+                        break;
+
+                    case DATE:
+                        set.setSortBy(SortByType.DATE);
+                        break;
+
+                    default:
+                        set.setSortBy(SortByType.DISTANCE);
+                        break;
+                }
+
+                SettingsManager.INSTANCE.setSettings(set);
+
+
+                mAlertDialog.dismiss();
+            }
+        });
+
+        TextView dialogTitleTv = (TextView) view.findViewById(R.id.dialog_list_selection_title_tv);
+        dialogTitleTv.setText("Sort By");
+
+        if (this.getActivity().getWindow() != null) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            builder.setView(view);
+            mAlertDialog = builder.create();
+
+            mAlertDialog.show();
+        }
+    }
+
+    @Override
+    public void settingsEventReceived() {
+        switch (SettingsManager.INSTANCE.getSettings().getSortBy())
+        {
+            case DATE:
+                Log.d("fdjskl", "date");
+                Collections.sort(mBirds, new RemoteSighting.DateComparator());
+                break;
+
+            case NAME:
+                Log.d("fdjskl", "name");
+                Collections.sort(mBirds, new RemoteSighting.NameComparator());
+                break;
+
+            case DISTANCE:
+                Log.d("fdjskl", "distance");
+                Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
+                break;
+
+        }
+
+
+        mBirdsAdapter.notifyDataSetChanged();
     }
 }
