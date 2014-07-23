@@ -79,37 +79,42 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
             if(action.equals(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION)){
 
                 ArrayList<RemoteSighting> birdsComputed = intent.getExtras().getParcelableArrayList(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_EXTRA);
-                setBirdImages(birdsComputed);
 
-
-                mIsUpdateGv = false;
-                int firstPosition = mBirdsGv.getFirstVisiblePosition();
-                int lastPosition = mBirdsGv.getLastVisiblePosition();
-                Integer position = 0;
-
-                for( RemoteSighting bird : birdsComputed )
+                if( birdsComputed != null )
                 {
-                    position = mBirdPositionMap.get(bird.getSciName());
-                    Log.d("position", position+"");
+                    setBirdImages(birdsComputed);
 
-                    if( position != null )
+
+                    mIsUpdateGv = false;
+                    int firstPosition = mBirdsGv.getFirstVisiblePosition();
+                    int lastPosition = mBirdsGv.getLastVisiblePosition();
+                    Integer position = 0;
+
+                    for( RemoteSighting bird : birdsComputed )
                     {
-                        if( position >= firstPosition && position < lastPosition )
-                            mIsUpdateGv = true;
-                    }
-                }
+                        position = mBirdPositionMap.get(bird.getSciName());
+                        Log.d("position", position+"");
 
-                BAMApplication.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-
-                        if( mIsUpdateGv ) {
-
-                            mBirdsAdapter.notifyDataSetChanged();
-
+                        if( position != null )
+                        {
+                            if( position >= firstPosition && position < lastPosition )
+                                mIsUpdateGv = true;
                         }
                     }
-                });
+
+                    BAMApplication.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            if( mIsUpdateGv ) {
+
+                                mBirdsAdapter.notifyDataSetChanged();
+
+                            }
+                        }
+                    });
+                }
+
             }
         }
     };
@@ -151,9 +156,9 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 RemoteSighting bird = mBirds.get(position);
 
-//                Intent intent = new Intent(getActivity(), BirdActivity.class);
-//                intent.putExtra(BirdActivity.Extras.BIRD, bird);
-//                startActivity(intent);
+                Intent intent = new Intent(getActivity(), BirdActivity.class);
+                intent.putExtra(BirdActivity.Extras.BIRD, bird);
+                startActivity(intent);
             }
         });
 
@@ -263,7 +268,9 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         for( RemoteSighting bird : birds )
         {
             RemoteSighting birdInGridView = mBirdMap.get(bird.getSciName());
-            birdInGridView.setImages(bird.getImages());
+
+            if( birdInGridView != null )
+                birdInGridView.setImages(bird.getImages());
         }
     }
 
@@ -316,32 +323,36 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                     protected void onPostExecute(List<RemoteSighting> birds) {
                         super.onPostExecute(birds);
 
-                        setBirdImages(birds);
+                        if( birds != null )
+                        {
+                            setBirdImages(birds);
 
-                        BAMApplication.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
+                            BAMApplication.runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
 
-                                switch (SettingsManager.INSTANCE.getSettings().getSortBy())
-                                {
-                                    case DATE:
-                                        Collections.sort(mBirds, new RemoteSighting.DateComparator());
-                                        break;
+                                    switch (SettingsManager.INSTANCE.getSettings().getSortBy())
+                                    {
+                                        case DATE:
+                                            Collections.sort(mBirds, new RemoteSighting.DateComparator());
+                                            break;
 
-                                    case NAME:
-                                        Collections.sort(mBirds, new RemoteSighting.NameComparator());
-                                        break;
+                                        case NAME:
+                                            Collections.sort(mBirds, new RemoteSighting.NameComparator());
+                                            break;
 
-                                    case DISTANCE:
-                                        Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
-                                        break;
+                                        case DISTANCE:
+                                            Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
+                                            break;
 
+                                    }
+
+
+                                    mBirdsAdapter.notifyDataSetChanged();
                                 }
+                            });
+                        }
 
-
-                                mBirdsAdapter.notifyDataSetChanged();
-                            }
-                        });
                     }
                 };
 

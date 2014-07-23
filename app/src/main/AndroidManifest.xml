@@ -12,11 +12,11 @@
         android:allowBackup="true"
         android:name="com.sobremesa.birdwatching.BAMApplication"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name"
-        android:theme="@style/AppTheme" >
+        android:label="@string/app_name" >
         <activity
             android:name=".activities.MainActivity"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.AppTheme"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -28,7 +28,8 @@
         <activity
             android:name=".activities.BirdActivity"
             android:screenOrientation="portrait"
-            android:label="@string/app_name" />
+            android:theme="@style/Theme.AppTheme"
+            android:label="" />
 
 
 

@@ -2,12 +2,16 @@ package com.sobremesa.birdwatching.activities;
 
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -47,6 +51,11 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        requestWindowFeature(android.view.Window.FEATURE_ACTION_BAR_OVERLAY );
+
+        getActionBar().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
         setContentView(R.layout.activity_bird);
 
         mBird = (RemoteSighting)getIntent().getParcelableExtra(Extras.BIRD);
@@ -61,6 +70,15 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
         getSupportLoaderManager().initLoader(0, null, this);
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.bird, menu);
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {

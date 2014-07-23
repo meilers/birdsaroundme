@@ -1,14 +1,48 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
-        <item name="android:actionBarStyle">@style/MyActionBarStyle</item>
+    <style name="Theme.AppTheme" parent="android:Theme.Holo">
+        <item name="android:actionBarStyle">@style/Theme.AppTheme.actionBar</item>
+        <item name="android:actionBarWidgetTheme">@style/Theme.AppTheme.actionBar.widget</item>
+        <!--<item name="android:editTextStyle">@style/Theme.AppTheme.editText</item>-->
+        <!--<item name="android:buttonStyle">@style/Theme.AppTheme.button</item>-->
+        <!--<item name="android:checkboxStyle">@style/Theme.AppTheme.checkbox</item>-->
+        <!--<item name="android:textViewStyle">@style/Theme.AppTheme.textView</item>-->
     </style>
 
+    <!-- Actionbar things -->
 
-    <style name="MyActionBarStyle" parent="@android:style/Widget.Holo.Light.ActionBar">
+    <style name="Theme.AppTheme.actionBar" parent="android:Widget.Holo.ActionBar">
         <item name="android:displayOptions">showTitle</item>
+        <item name="android:titleTextStyle">@style/Theme.AppTheme.actionBarTitle</item>
+        <item name="android:subtitleTextStyle">@style/Theme.AppTheme.actionBarSubtitle</item>
+        <item name="android:background">#fff3f3f3</item>
+        <!--<item name="android:icon">@drawable/ic_actionbar</item>      <item name="android:background">@drawable/bkg_actionbar</item>-->
+
     </style>
+
+    <style name="Theme.AppTheme.actionBarTitle" parent="android:TextAppearance.Holo.Widget.ActionBar.Title">
+        <item name="android:textColor">@android:color/black</item>
+
+    </style>
+    <style name="Theme.AppTheme.actionBarSubtitle" parent="android:TextAppearance.Holo.Widget.ActionBar.Subtitle">
+        <item name="android:textColor">#444444</item>
+
+    </style>
+
+    <style name="Theme.AppTheme.actionBar.widget" parent="@android:style/Theme.Holo">
+        <!--<item name="android:popupMenuStyle">@style/Theme.AppTheme.actionBar.PopupMenu</item>-->
+        <!--<item name="android:dropDownListViewStyle">@style/Theme.AppTheme.actionBar.DropDownListView</item>-->
+    </style>
+
+    <!--<style name="Theme.AppTheme.actionBar.PopupMenu" parent="@android:style/Widget.Holo.ListPopupWindow">-->
+        <!--<item name="android:popupBackground">@drawable/bkg_popup</item>-->
+    <!--</style>-->
+
+    <!--<style name="Theme.AppTheme.actionBar.DropDownListView" parent="@android:style/Widget.Holo.ListView.DropDown">-->
+        <!--<item name="android:listSelector">@drawable/bkg_strips</item>-->
+    <!--</style>-->
+
 
 
 </resources>
