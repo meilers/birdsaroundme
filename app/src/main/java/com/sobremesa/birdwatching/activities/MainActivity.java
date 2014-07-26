@@ -12,6 +12,7 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
@@ -95,7 +96,6 @@ public class MainActivity extends FragmentActivity {
     private GooglePlayServicesClient.OnConnectionFailedListener mServicesClient2 = new GooglePlayServicesClient.OnConnectionFailedListener() {
         @Override
         public void onConnectionFailed(ConnectionResult result) {
-            Log.d("retrieve location", "ouaip");
         }
     };
 
@@ -221,26 +221,42 @@ public class MainActivity extends FragmentActivity {
 
     private void locationUpdated()
     {
-        Geocoder gcd = new Geocoder(this, Locale.getDefault());
-        List<Address> addresses;
-        try {
-            addresses = gcd.getFromLocation(mLocation.getLatitude(), mLocation.getLongitude(), 1);
+        AsyncTask<Void,Void,String> locationTask = new AsyncTask<Void,Void,String>() {
 
-            if (addresses.size() > 0) {
-                String city = addresses.get(0).getLocality();
-                getActionBar().setSubtitle(city + ", lat: " + String.format("%.2f", mLocation.getLatitude()) + ", lng: " + String.format("%.2f", mLocation.getLongitude()));
+            @Override
+            protected String doInBackground(Void... params) {
+
+                String city = "";
+                Geocoder gcd = new Geocoder(MainActivity.this, Locale.getDefault());
+                List<Address> addresses;
+                try {
+                    addresses = gcd.getFromLocation(mLocation.getLatitude(), mLocation.getLongitude(), 1);
+
+                    if (addresses.size() > 0) {
+                        city = addresses.get(0).getLocality();
+
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                catch (Exception e) {}
+
+                return city;
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        catch (Exception e) {}
+            @Override
+            protected void onPostExecute(String city) {
+                super.onPostExecute(city);
+
+                getActionBar().setSubtitle(city + ", lat: " + String.format("%.2f", mLocation.getLatitude()) + ", lng: " + String.format("%.2f", mLocation.getLongitude()));
+            }
+        };
 
 
-        if( !isNetworkConnected() )
-//            new DownloadSightingsTask().execute(mLocation.getLatitude(), mLocation.getLongitude());
-//            //fetchRecordings(String.valueOf(mLocation.getLatitude()), String.valueOf(mLocation.getLongitude()));
-//        else
+        if( isNetworkConnected() )
+            locationTask.execute();
+        else
             showConnectionAlert();
     }
 

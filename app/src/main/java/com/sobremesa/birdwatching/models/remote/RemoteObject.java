@@ -3,7 +3,7 @@ package com.sobremesa.birdwatching.models.remote;
 /**
  * Created by Michael on 2014-03-11.
  */
-public abstract class BaseRemoteModel {
+public abstract class RemoteObject {
 
     public enum SyncStatus
     {

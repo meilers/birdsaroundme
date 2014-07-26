@@ -14,13 +14,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 /**
  * Created by Michael on 2014-03-17.
  */
-public class RemoteSighting extends BaseRemoteModel implements Parcelable {
+public class RemoteSighting extends RemoteObject implements Parcelable {
 
 
     public static class DateComparator implements Comparator<RemoteSighting> {

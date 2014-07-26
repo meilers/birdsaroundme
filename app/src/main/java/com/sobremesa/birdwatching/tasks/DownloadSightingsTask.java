@@ -56,7 +56,6 @@ public class DownloadSightingsTask extends AsyncTask<Double, Void, ArrayList<Rem
             return sightings;
 
         } catch (RetrofitError e) {
-            Log.d("worked,", "wor");
 
         }
 

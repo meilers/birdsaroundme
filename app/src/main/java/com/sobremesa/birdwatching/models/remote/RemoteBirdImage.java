@@ -6,12 +6,11 @@ import android.os.Parcelable;
 
 import com.google.gson.annotations.Expose;
 import com.sobremesa.birdwatching.database.BirdImageTable;
-import com.sobremesa.birdwatching.database.SightingTable;
 
 /**
  * Created by Michael on 2014-03-17.
  */
-public class RemoteBirdImage extends BaseRemoteModel implements Parcelable {
+public class RemoteBirdImage extends RemoteObject implements Parcelable {
 
     @Expose
     private String imageUrl;

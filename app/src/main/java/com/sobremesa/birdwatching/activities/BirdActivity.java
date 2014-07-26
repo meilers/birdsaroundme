@@ -9,6 +9,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -18,12 +19,15 @@ import android.widget.ImageView;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.R;
+import com.sobremesa.birdwatching.adapters.BirdImagesPagerAdapter;
 import com.sobremesa.birdwatching.database.BirdImageTable;
 import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.fragments.BirdsFragment;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
+import com.viewpagerindicator.CirclePageIndicator;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +39,14 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
 
     private RemoteSighting mBird;
+    private List<RemoteBirdImage> mBirdImages;
+
+
     private CursorLoader mCusorLoader;
 
-    private ImageView mIv;
+    private BirdImagesPagerAdapter mImageAdapter;
+    private ViewPager mImagePager;
+    private CirclePageIndicator mImageIndicator;
 
     public final static class Extras
     {
@@ -59,9 +68,14 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
         setContentView(R.layout.activity_bird);
 
         mBird = (RemoteSighting)getIntent().getParcelableExtra(Extras.BIRD);
+        mBirdImages = new ArrayList<RemoteBirdImage>();
 
-        mIv = (ImageView)findViewById(R.id.activity_bird_iv);
+        mImageAdapter = new BirdImagesPagerAdapter(getSupportFragmentManager(), mBirdImages);
+        mImagePager = (ViewPager)findViewById(R.id.activity_bird_view_pager);
+        mImagePager.setAdapter(mImageAdapter);
 
+        mImageIndicator = (CirclePageIndicator)findViewById(R.id.activity_bird_view_pager_indicator);
+        mImageIndicator.setViewPager(mImagePager);
     }
 
     @Override
@@ -91,19 +105,14 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         if( cursor != null )
         {
-            ArrayList<RemoteBirdImage> birdImages = new ArrayList<RemoteBirdImage>();
+            mBirdImages.clear();
 
             for( cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext())
             {
-                birdImages.add(new RemoteBirdImage(cursor));
+                mBirdImages.add(new RemoteBirdImage(cursor));
             }
 
-            mBird.setImages(birdImages);
-
-            if( mBird.getImages().size() > 0 )
-                BAMApplication.getImageLoader().displayImage(mBird.getImages().get(0).getImageUrl(), mIv);
-            else
-                mIv.setImageDrawable(BAMApplication.getContext().getResources().getDrawable(R.drawable.default_bird));
+            mImageAdapter.notifyDataSetChanged();
         }
     }
 

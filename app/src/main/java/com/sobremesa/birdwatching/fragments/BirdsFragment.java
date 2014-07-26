@@ -93,7 +93,6 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                     for( RemoteSighting bird : birdsComputed )
                     {
                         position = mBirdPositionMap.get(bird.getSciName());
-                        Log.d("position", position+"");
 
                         if( position != null )
                         {
@@ -242,13 +241,8 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                     super.onPostExecute(remoteSightings);
 
                     if( remoteSightings != null ) {
-                        if (getActivity() != null) {
-                            final Intent intent = new Intent(getActivity(), BirdImageService.class);
-                            intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, remoteSightings);
-                            intent.setAction(Intent.ACTION_SYNC);
+                        syncBirdImages(remoteSightings);
 
-                            getActivity().startService(intent);
-                        }
                         AnalyticsUtil.sendEvent(TAG, AnalyticsUtil.Categories.SIGHTINGS, AnalyticsUtil.Actions.SYNC, "Number of sightings downloaded: " + remoteSightings.size() );
                     }
                     else
@@ -260,6 +254,17 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                 }
             };
             mDownloadSightingsTask.execute(location.getLatitude(), location.getLongitude());
+        }
+    }
+
+    private void syncBirdImages(ArrayList<RemoteSighting> birds)
+    {
+        if( getActivity() != null ) {
+            final Intent intent = new Intent(getActivity(), BirdImageService.class);
+            intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, birds);
+            intent.setAction(Intent.ACTION_SYNC);
+
+            getActivity().startService(intent);
         }
     }
 
@@ -287,17 +292,13 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, final Cursor cursor) {
 
-
+        Log.d("load", "finished");
         if( cursor != null )
         {
 
             if( cursor.getCount() > 0 ) {
 
                 int i = 0;
-                final Intent intent = new Intent(getActivity(), BirdImageService.class);
-                intent.putParcelableArrayListExtra(BirdImageService.Extras.BIRDS, mBirds);
-                intent.setAction(Intent.ACTION_SYNC);
-
 
                 mBirds.clear();
                 mBirdMap.clear();
@@ -310,6 +311,21 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                     mBirdPositionMap.put(bird.getSciName(), i);
 
                     ++i;
+                }
+
+                switch (SettingsManager.INSTANCE.getSettings().getSortBy())
+                {
+                    case DATE:
+                        Collections.sort(mBirds, new RemoteSighting.DateComparator());
+                        break;
+
+                    case NAME:
+                        Collections.sort(mBirds, new RemoteSighting.NameComparator());
+                        break;
+
+                    case DISTANCE:
+                        Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
+                        break;
                 }
 
 
@@ -327,30 +343,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                         {
                             setBirdImages(birds);
 
-                            BAMApplication.runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-
-                                    switch (SettingsManager.INSTANCE.getSettings().getSortBy())
-                                    {
-                                        case DATE:
-                                            Collections.sort(mBirds, new RemoteSighting.DateComparator());
-                                            break;
-
-                                        case NAME:
-                                            Collections.sort(mBirds, new RemoteSighting.NameComparator());
-                                            break;
-
-                                        case DISTANCE:
-                                            Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
-                                            break;
-
-                                    }
-
-
-                                    mBirdsAdapter.notifyDataSetChanged();
-                                }
-                            });
+                            mBirdsAdapter.notifyDataSetChanged();
                         }
 
                     }
@@ -456,23 +449,21 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         switch (SettingsManager.INSTANCE.getSettings().getSortBy())
         {
             case DATE:
-                Log.d("fdjskl", "date");
                 Collections.sort(mBirds, new RemoteSighting.DateComparator());
                 break;
 
             case NAME:
-                Log.d("fdjskl", "name");
                 Collections.sort(mBirds, new RemoteSighting.NameComparator());
                 break;
 
             case DISTANCE:
-                Log.d("fdjskl", "distance");
                 Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
                 break;
-
         }
 
 
         mBirdsAdapter.notifyDataSetChanged();
     }
+
+
 }

@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 
-import com.sobremesa.birdwatching.models.remote.BaseRemoteModel;
+import com.sobremesa.birdwatching.models.remote.RemoteObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by Michael on 2014-03-11.
  */
-public abstract class BaseSynchronizer <T extends BaseRemoteModel> {
+public abstract class BaseSynchronizer <T extends RemoteObject> {
 
     protected Context mContext;
 

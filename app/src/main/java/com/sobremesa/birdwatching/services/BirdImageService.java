@@ -159,7 +159,6 @@ public class BirdImageService extends IntentService {
 
                     if( itr % 9 == 8 || itr == birds.size() )
                     {
-                        Log.d("broadcasting itr", itr+"");
                         Intent broadcastIntent = new Intent();
                         Bundle extras = new Bundle();
                         extras.putParcelableArrayList(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_EXTRA, birdsComputed);

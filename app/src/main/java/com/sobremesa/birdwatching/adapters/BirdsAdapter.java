@@ -84,7 +84,6 @@ public class BirdsAdapter extends BaseAdapter
 
         // Name
         holder.mComNameTv.setText(bird.getComName());
-        Log.d("the name", "name:"+bird.getComName());
 
         // Image
 
@@ -93,10 +92,10 @@ public class BirdsAdapter extends BaseAdapter
         {
             int i = 0;
 
-            if( images.size() > 1 ) {
-                Random r = new Random();
-                i = r.nextInt(images.size() - 1);
-            }
+//            if( images.size() > 1 ) {
+//                Random r = new Random();
+//                i = r.nextInt(images.size() - 1);
+//            }
 
             RemoteBirdImage image = images.get(i);
             final String imageUrl = image.getImageUrl();
