@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
@@ -24,14 +25,21 @@ import com.sobremesa.birdwatching.adapters.BirdImagesPagerAdapter;
 import com.sobremesa.birdwatching.database.BirdImageTable;
 import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.fragments.BirdsFragment;
+import com.sobremesa.birdwatching.managers.LocationManager;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
+import com.sobremesa.birdwatching.util.LocationUtil;
 import com.viewpagerindicator.CirclePageIndicator;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Created by omegatai on 2014-07-09.
@@ -51,7 +59,9 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
     private TextView mComNameTv;
     private TextView mSciNameTv;
-
+    private TextView mHowManyTv;
+    private TextView mDateTv;
+    private TextView mDistanceTv;
 
     public final static class Extras
     {
@@ -84,7 +94,9 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
         mComNameTv = (TextView)findViewById(R.id.activity_bird_com_name_tv);
         mSciNameTv = (TextView)findViewById(R.id.activity_bird_sci_name_tv);
-
+        mHowManyTv = (TextView)findViewById(R.id.activity_bird_how_many_tv);
+        mDateTv = (TextView)findViewById(R.id.activity_bird_date_tv);
+        mDistanceTv = (TextView)findViewById(R.id.activity_bird_distance_tv);
 
         updateView();
     }
@@ -137,5 +149,59 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
     {
         mComNameTv.setText(mBird.getComName());
         mSciNameTv.setText(mBird.getSciName());
+
+
+        // How Many
+        mHowManyTv.setText(mBird.getHowMany()+ " Spotted");
+
+
+        // Last Seen
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd HH:mm", Locale.getDefault());
+        Date date = null;
+
+        try {
+            date = dateFormat.parse(mBird.getObsDt());
+
+            Calendar thatDay = Calendar.getInstance();
+            thatDay.setTime(date);
+
+            Calendar today = Calendar.getInstance();
+
+            long diff = today.getTimeInMillis() - thatDay.getTimeInMillis();
+            long days = diff / (24 * 60 * 60 * 1000);
+            long hours = diff / (60 * 60 * 1000);
+
+            if( days < 1 )
+            {
+                if( hours < 2 )
+                    mDateTv.setText(hours + " hour");
+                else
+                    mDateTv.setText(hours + " hours");
+            }
+            else {
+
+                if( days < 2 )
+                    mDateTv.setText(days + " day");
+                else
+                    mDateTv.setText(days + " days");
+            }
+
+
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+
+        // Distance
+        Location location = LocationManager.INSTANCE.getLocation();
+
+        if( location != null )
+        {
+            float distance = LocationUtil.computeDistance((float) location.getLatitude(), (float) location.getLongitude(), mBird.getLat().floatValue(), mBird.getLng().floatValue());
+            float distanceInKm = distance/1000.0f;
+
+            mDistanceTv.setText(String.format("%.2f Km", distanceInKm));
+        }
     }
 }

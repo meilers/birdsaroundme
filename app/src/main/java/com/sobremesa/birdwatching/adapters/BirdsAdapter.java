@@ -137,16 +137,16 @@ public class BirdsAdapter extends BaseAdapter
             if( days < 1 )
             {
                 if( hours < 2 )
-                    holder.mLastSeenTv.setText("Seen " + hours + " hour ago");
+                    holder.mLastSeenTv.setText(hours + " hour ago");
                 else
-                    holder.mLastSeenTv.setText("Seen " + hours + " hours ago");
+                    holder.mLastSeenTv.setText(hours + " hours ago");
             }
             else {
 
                 if( days < 2 )
-                    holder.mLastSeenTv.setText("Seen " + days + " day ago");
+                    holder.mLastSeenTv.setText(days + " day ago");
                 else
-                    holder.mLastSeenTv.setText("Seen " + days + " days ago");
+                    holder.mLastSeenTv.setText(days + " days ago");
             }
 
 
