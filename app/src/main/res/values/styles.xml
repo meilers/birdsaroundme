@@ -1,7 +1,7 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="Theme.AppTheme" parent="android:Theme.Holo">
+    <style name="Theme.AppTheme" parent="android:Theme.Holo.Light">
         <item name="android:actionBarStyle">@style/Theme.AppTheme.actionBar</item>
         <item name="android:actionBarWidgetTheme">@style/Theme.AppTheme.actionBar.widget</item>
         <!--<item name="android:editTextStyle">@style/Theme.AppTheme.editText</item>-->

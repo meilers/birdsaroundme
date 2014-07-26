@@ -15,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.sobremesa.birdwatching.BAMApplication;
@@ -48,6 +49,10 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
     private ViewPager mImagePager;
     private CirclePageIndicator mImageIndicator;
 
+    private TextView mComNameTv;
+    private TextView mSciNameTv;
+
+
     public final static class Extras
     {
         public static final String BIRD = "bird";
@@ -76,6 +81,12 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
         mImageIndicator = (CirclePageIndicator)findViewById(R.id.activity_bird_view_pager_indicator);
         mImageIndicator.setViewPager(mImagePager);
+
+        mComNameTv = (TextView)findViewById(R.id.activity_bird_com_name_tv);
+        mSciNameTv = (TextView)findViewById(R.id.activity_bird_sci_name_tv);
+
+
+        updateView();
     }
 
     @Override
@@ -119,5 +130,12 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+
+    private void updateView()
+    {
+        mComNameTv.setText(mBird.getComName());
+        mSciNameTv.setText(mBird.getSciName());
     }
 }

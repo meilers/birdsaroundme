@@ -59,10 +59,17 @@ public class RemoteSighting extends RemoteObject implements Parcelable {
 
 
 
-            int dist1 = (int)distFrom((float)curLocation.getLatitude(), (float)curLocation.getLongitude(), o1.getLat().floatValue(), o1.getLng().floatValue());
-            int dist2 = (int)distFrom((float)curLocation.getLatitude(), (float)curLocation.getLongitude(), o2.getLat().floatValue(), o2.getLng().floatValue());
+            try {
+                int dist1 = (int) distFrom((float) curLocation.getLatitude(), (float) curLocation.getLongitude(), o1.getLat().floatValue(), o1.getLng().floatValue());
+                int dist2 = (int) distFrom((float) curLocation.getLatitude(), (float) curLocation.getLongitude(), o2.getLat().floatValue(), o2.getLng().floatValue());
 
-            return dist1 - dist2;
+                return dist1 - dist2;
+            }
+            catch (Exception e)
+            {
+
+            }
+            return 0;
         }
     }
 

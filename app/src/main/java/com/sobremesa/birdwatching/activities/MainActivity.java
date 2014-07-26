@@ -249,7 +249,8 @@ public class MainActivity extends FragmentActivity {
             protected void onPostExecute(String city) {
                 super.onPostExecute(city);
 
-                getActionBar().setSubtitle(city + ", lat: " + String.format("%.2f", mLocation.getLatitude()) + ", lng: " + String.format("%.2f", mLocation.getLongitude()));
+                if( city != null && mLocation != null )
+                    getActionBar().setSubtitle(city + ", lat: " + String.format("%.2f", mLocation.getLatitude()) + ", lng: " + String.format("%.2f", mLocation.getLongitude()));
             }
         };
 
