@@ -1,9 +1,8 @@
-package com.sobremesa.birdwatching.clients;
+package com.sobremesa.birdwatching.rest;
 
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import retrofit.http.GET;
 import retrofit.http.Query;

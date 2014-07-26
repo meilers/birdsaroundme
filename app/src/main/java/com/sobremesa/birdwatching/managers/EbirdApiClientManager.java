@@ -14,9 +14,10 @@ import retrofit.converter.GsonConverter;
 /**
  * Created by Michael on 2014-03-11.
  */
-public class EbirdApiClientManager {
+public enum EbirdApiClientManager {
 
-    private static EbirdApiClientManager mInstance;
+    INSTANCE;
+
     private String mBaseUrl = "http://ebird.org/ws1.1/data/obs/geo";
 
     private RestAdapter mRestAdapter;
@@ -26,13 +27,6 @@ public class EbirdApiClientManager {
     private EbirdApiClientManager() {
     }
 
-    public static EbirdApiClientManager getInstance() {
-        if (null == mInstance) {
-            mInstance = new EbirdApiClientManager();
-        }
-
-        return mInstance;
-    }
 
     @SuppressWarnings("unchecked")
     public <T> T getClient(Context context, Class<T> clazz) {

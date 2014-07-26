@@ -15,16 +15,17 @@ public class BirdImageTable {
     public static final String ID = "_id";
     public static final String IMAGE_URL = "imageUrl";
     public static final String SCI_NAME = "sciName";
-
+    public static final String POSITION = "position";
 
 
     // Full names for disambiguation
     public static final String FULL_ID = TABLE_NAME + "." + ID;
     public static final String FULL_IMAGE_URL = TABLE_NAME + "." + IMAGE_URL;
     public static final String FULL_SCI_NAME = TABLE_NAME + "." + SCI_NAME;
+    public static final String FULL_POSITION = TABLE_NAME + "." + POSITION;
 
-    public static String[] ALL_COLUMNS = new String[]{ID, IMAGE_URL, SCI_NAME};
-    public static String[] FULL_ALL_COLUMNS = new String[]{FULL_ID, FULL_IMAGE_URL, FULL_SCI_NAME};
+    public static String[] ALL_COLUMNS = new String[]{ID, IMAGE_URL, SCI_NAME, POSITION};
+    public static String[] FULL_ALL_COLUMNS = new String[]{FULL_ID, FULL_IMAGE_URL, FULL_SCI_NAME, FULL_POSITION};
 
     // Database creation SQL statement
     private static final String DATABASE_CREATE = "create table "
@@ -32,7 +33,8 @@ public class BirdImageTable {
             + "("
             + ID + " integer primary key autoincrement, "
             + IMAGE_URL + " text not null, "
-            + SCI_NAME + " text not null"
+            + POSITION + " text not null,"
+            + SCI_NAME + " integer not null"
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {

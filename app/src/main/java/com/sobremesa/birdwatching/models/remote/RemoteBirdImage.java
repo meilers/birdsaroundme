@@ -19,6 +19,7 @@ public class RemoteBirdImage extends RemoteObject implements Parcelable {
     private String sciName;
 
 
+    private int mPosition;
 
 
 
@@ -39,6 +40,7 @@ public class RemoteBirdImage extends RemoteObject implements Parcelable {
     public RemoteBirdImage(final Cursor cursor) {
         setImageUrl(cursor.getString(cursor.getColumnIndex(BirdImageTable.IMAGE_URL)));
         setSciName(cursor.getString(cursor.getColumnIndex(BirdImageTable.SCI_NAME)));
+        setPosition(cursor.getInt(cursor.getColumnIndex(BirdImageTable.POSITION)));
     }
 
     public RemoteBirdImage(Parcel in) {
@@ -54,12 +56,14 @@ public class RemoteBirdImage extends RemoteObject implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(this.getImageUrl());
         dest.writeString(this.getSciName());
+        dest.writeInt(this.getPosition());
     }
 
 
     public void readFromParcel(Parcel in) {
         setImageUrl(in.readString());
         setSciName(in.readString());
+        setPosition(in.readInt());
 
     }
 
@@ -91,4 +95,14 @@ public class RemoteBirdImage extends RemoteObject implements Parcelable {
     public void setSciName(String sciName) {
         this.sciName = sciName;
     }
+
+    public int getPosition() {
+        return mPosition;
+    }
+
+    public void setPosition(int position) {
+        this.mPosition = position;
+    }
+
+
 }

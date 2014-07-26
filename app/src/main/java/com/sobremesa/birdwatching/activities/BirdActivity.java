@@ -80,6 +80,10 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
         getActionBar().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
+        /* TODO remove */
+        getActionBar().hide();
+        /* END */
+
         setContentView(R.layout.activity_bird);
 
         mBird = (RemoteSighting)getIntent().getParcelableExtra(Extras.BIRD);
@@ -119,7 +123,7 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        mCusorLoader = new CursorLoader(this, BAMContentProvider.Uris.BIRD_IMAGES_URI, BirdImageTable.ALL_COLUMNS, BirdImageTable.SCI_NAME + "=?", new String[] {mBird.getSciName()}, null);
+        mCusorLoader = new CursorLoader(this, BAMContentProvider.Uris.BIRD_IMAGES_URI, BirdImageTable.ALL_COLUMNS, BirdImageTable.SCI_NAME + "=?", new String[] {mBird.getSciName()}, BirdImageTable.POSITION);
 
         return mCusorLoader;
     }

@@ -12,6 +12,7 @@ import android.os.RemoteException;
 import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.database.BAMDatabaseHelper;
 import com.sobremesa.birdwatching.database.BirdImageTable;
+import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
 
@@ -96,6 +97,7 @@ public class BirdImageSynchronizer extends BaseSynchronizer<RemoteBirdImage>{
 
         values.put(BirdImageTable.IMAGE_URL, remoteSighting.getImageUrl());
         values.put(BirdImageTable.SCI_NAME, remoteSighting.getSciName());
+        values.put(BirdImageTable.POSITION, remoteSighting.getPosition());
 
         return values;
 
@@ -127,6 +129,9 @@ public class BirdImageSynchronizer extends BaseSynchronizer<RemoteBirdImage>{
 
                 String sciName = (String)(values[i].get(BirdImageTable.SCI_NAME));
                 inserter.bind(inserter.getColumnIndex(BirdImageTable.SCI_NAME), sciName);
+
+                int position = ((Number) values[i].get(BirdImageTable.POSITION)).intValue();
+                inserter.bind(inserter.getColumnIndex(BirdImageTable.POSITION), position);
 
                 inserter.execute();
             }

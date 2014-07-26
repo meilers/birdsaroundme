@@ -37,7 +37,7 @@ public class PopulateBirdImagesTask extends AsyncTask<List<RemoteSighting>, Void
     private void populateBirdImages(RemoteSighting bird)
     {
         ArrayList<RemoteBirdImage> birdImages = new ArrayList<RemoteBirdImage>();
-        Cursor imageCursor = BAMApplication.getContext().getContentResolver().query(BAMContentProvider.Uris.BIRD_IMAGES_URI, BirdImageTable.ALL_COLUMNS, BirdImageTable.SCI_NAME + "=?", new String[] { bird.getSciName()}, null);
+        Cursor imageCursor = BAMApplication.getContext().getContentResolver().query(BAMContentProvider.Uris.BIRD_IMAGES_URI, BirdImageTable.ALL_COLUMNS, BirdImageTable.SCI_NAME + "=?", new String[] { bird.getSciName()}, BirdImageTable.POSITION);
 
         if( imageCursor != null ) {
             for (imageCursor.moveToFirst(); !imageCursor.isAfterLast(); imageCursor.moveToNext()) {

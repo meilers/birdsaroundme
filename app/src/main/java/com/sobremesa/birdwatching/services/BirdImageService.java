@@ -82,6 +82,7 @@ public class BirdImageService extends IntentService {
             String url = "";
             String imageUrl = "";
             int itr = 0;
+            int i = 0;
 
             for( RemoteSighting bird : birds ) {
                 birdImages = new ArrayList<RemoteBirdImage>();
@@ -106,6 +107,8 @@ public class BirdImageService extends IntentService {
                     Pattern pattern1 = Pattern.compile("File:[^\"]*?jpg");
                     Matcher matcher1 = pattern1.matcher(imageJson);
                     String filename = "";
+
+                    i = 0;
 
                     while (matcher1.find()) {
                         filename = matcher1.group();
@@ -139,7 +142,10 @@ public class BirdImageService extends IntentService {
                         RemoteBirdImage birdImage = new RemoteBirdImage();
                         birdImage.setImageUrl(imageUrl);
                         birdImage.setSciName(bird.getSciName());
+                        birdImage.setPosition(i);
                         birdImages.add(birdImage);
+
+                        ++i;
                     }
 
                     // Save
