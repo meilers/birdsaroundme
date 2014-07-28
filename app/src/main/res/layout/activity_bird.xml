@@ -122,6 +122,19 @@
             </LinearLayout>
 
 
+            <TextView
+                android:id="@+id/activity_bird_description_tv"
+                android:layout_width="wrap_content"
+                android:layout_marginTop="@dimen/padding_large"
+                android:layout_height="wrap_content"
+                android:paddingLeft="@dimen/padding_medium"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+
+
+
+
+
         </LinearLayout>
 
 

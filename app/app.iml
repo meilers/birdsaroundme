@@ -66,6 +66,7 @@
     <orderEntry type="library" exported="" name="support-v4-19.1.0" level="project" />
     <orderEntry type="library" exported="" name="play-services-4.3.23" level="project" />
     <orderEntry type="library" exported="" name="crashlytics-1.1.11" level="project" />
+    <orderEntry type="library" exported="" name="commons-lang3-3.3.2" level="project" />
     <orderEntry type="library" exported="" name="universal-image-loader-1.9.2" level="project" />
     <orderEntry type="module" module-name="viewpagerindicator" exported="" />
   </component>

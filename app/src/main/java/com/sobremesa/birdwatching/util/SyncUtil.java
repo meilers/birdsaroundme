@@ -4,6 +4,7 @@ import android.database.Cursor;
 
 
 import com.sobremesa.birdwatching.BAMApplication;
+import com.sobremesa.birdwatching.models.remote.RemoteBirdDescription;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.synchronizers.BaseSynchronizer;
@@ -30,6 +31,14 @@ public class SyncUtil {
             preProcessor.preProcessRemoteRecords(remoteBirdImages);
 
         synchronizer.synchronize(BAMApplication.getContext(), remoteBirdImages, localBirdImages, remoteIdentifierColumn, remoteIdentifierColumn2);
+    }
+
+    public static void synchronizeRemoteBirdDescriptions(List<RemoteBirdDescription> remoteBirdDescriptions, Cursor localBirdDescriptions, int remoteIdentifierColumn, int remoteIdentifierColumn2, BaseSynchronizer<RemoteBirdDescription> synchronizer,BasePreProcessor<RemoteBirdDescription> preProcessor) {
+
+        if( preProcessor != null )
+            preProcessor.preProcessRemoteRecords(remoteBirdDescriptions);
+
+        synchronizer.synchronize(BAMApplication.getContext(), remoteBirdDescriptions, localBirdDescriptions, remoteIdentifierColumn, remoteIdentifierColumn2);
     }
 
 }

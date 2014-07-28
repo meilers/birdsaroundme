@@ -13,6 +13,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.sobremesa.birdwatching.database.BAMDatabaseHelper;
+import com.sobremesa.birdwatching.database.BirdDescriptionTable;
 import com.sobremesa.birdwatching.database.BirdImageTable;
 import com.sobremesa.birdwatching.database.SightingTable;
 
@@ -33,12 +34,14 @@ public class BAMContentProvider extends ContentProvider {
         public static final Uri SIGHTINGS_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.SIGHTINGS);
         public static final Uri SIGHTINGS_GROUP_BY_BIRD_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.SIGHTINGS + "/" + "BIRD");
         public static final Uri BIRD_IMAGES_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.BIRD_IMAGES);
+        public static final Uri BIRD_DESCRIPTIONS_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.BIRD_DESCRIPTIONS);
 
     }
 
     public static final class Paths {
         public static final String SIGHTINGS = "sightings";
         public static final String BIRD_IMAGES = "birdImages";
+        public static final String BIRD_DESCRIPTIONS = "birdDescriptions";
     }
 
 
@@ -47,7 +50,8 @@ public class BAMContentProvider extends ContentProvider {
     private static final int SIGHTINGS_GROUP_BY_BIRD_DIR = 2;
     private static final int BIRD_IMAGES_DIR = 3;
     private static final int BIRD_IMAGE_ID = 4;
-
+    private static final int BIRD_DESCRIPTIONS_DIR = 5;
+    private static final int BIRD_DESCRIPTION_ID = 6;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -64,6 +68,9 @@ public class BAMContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, Paths.SIGHTINGS + "/#", SIGHTING_ID);
         sURIMatcher.addURI(AUTHORITY, Paths.BIRD_IMAGES, BIRD_IMAGES_DIR);
         sURIMatcher.addURI(AUTHORITY, Paths.BIRD_IMAGES + "/#", BIRD_IMAGE_ID);
+        sURIMatcher.addURI(AUTHORITY, Paths.BIRD_DESCRIPTIONS, BIRD_DESCRIPTIONS_DIR);
+        sURIMatcher.addURI(AUTHORITY, Paths.BIRD_DESCRIPTIONS + "/#", BIRD_DESCRIPTION_ID);
+
 
         // projections
         sSightingsProjectionMap = new HashMap<String, String>();
@@ -110,6 +117,11 @@ public class BAMContentProvider extends ContentProvider {
             case BIRD_IMAGES_DIR:
                 return ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + Paths.BIRD_IMAGES;
 
+            case BIRD_DESCRIPTION_ID:
+                return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + Paths.BIRD_DESCRIPTIONS;
+            case BIRD_DESCRIPTIONS_DIR:
+                return ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + Paths.BIRD_DESCRIPTIONS;
+
 
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -147,6 +159,14 @@ public class BAMContentProvider extends ContentProvider {
             case BIRD_IMAGES_DIR:
                 queryBuilder.setTables(BirdImageTable.TABLE_NAME);
                 break;
+
+            case BIRD_DESCRIPTION_ID:
+                queryBuilder.appendWhere(BirdDescriptionTable.ID + "="
+                        + uri.getLastPathSegment());
+            case BIRD_DESCRIPTIONS_DIR:
+                queryBuilder.setTables(BirdDescriptionTable.TABLE_NAME);
+                break;
+
 
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -188,11 +208,23 @@ public class BAMContentProvider extends ContentProvider {
                     final long birdImageId = dbConnection.insertOrThrow(
                             BirdImageTable.TABLE_NAME, null, values);
                     final Uri newBird = ContentUris.withAppendedId(
-                            Uris.SIGHTINGS_URI, birdImageId);
+                            Uris.BIRD_IMAGES_URI, birdImageId);
 //                    getContext().getContentResolver().notifyChange(newBird,
 //                            null);
                     dbConnection.setTransactionSuccessful();
                     return newBird;
+
+
+                case BIRD_DESCRIPTIONS_DIR:
+                case BIRD_DESCRIPTION_ID:
+                    final long birdDescriptionId = dbConnection.insertOrThrow(
+                            BirdDescriptionTable.TABLE_NAME, null, values);
+                    final Uri newBirdDescription = ContentUris.withAppendedId(
+                            Uris.BIRD_DESCRIPTIONS_URI, birdDescriptionId);
+//                    getContext().getContentResolver().notifyChange(newBird,
+//                            null);
+                    dbConnection.setTransactionSuccessful();
+                    return newBirdDescription;
 
 
                 default:
@@ -238,6 +270,18 @@ public class BAMContentProvider extends ContentProvider {
                 case BIRD_IMAGE_ID :
                     deleteCount = dbConnection.delete(BirdImageTable.TABLE_NAME,
                             BirdImageTable.ID + "=?", new String[]{uri
+                                    .getPathSegments().get(1)});
+                    dbConnection.setTransactionSuccessful();
+                    break;
+
+                case BIRD_DESCRIPTIONS_DIR :
+                    deleteCount = dbConnection.delete(BirdDescriptionTable.TABLE_NAME,
+                            selection, selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+                case BIRD_DESCRIPTION_ID :
+                    deleteCount = dbConnection.delete(BirdDescriptionTable.TABLE_NAME,
+                            BirdDescriptionTable.ID + "=?", new String[]{uri
                                     .getPathSegments().get(1)});
                     dbConnection.setTransactionSuccessful();
                     break;
@@ -301,6 +345,26 @@ public class BAMContentProvider extends ContentProvider {
                             BirdImageTable.ID
                                     + "="
                                     + birdImageId
+                                    + (TextUtils.isEmpty(selection)
+                                    ? ""
+                                    : " AND (" + selection + ")"),
+                            selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+
+                case BIRD_DESCRIPTIONS_DIR :
+                    updateCount = dbConnection.update(BirdDescriptionTable.TABLE_NAME,
+                            values, selection, selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+                case BIRD_DESCRIPTION_ID :
+                    final Long birdDescriptionId = ContentUris.parseId(uri);
+                    updateCount = dbConnection.update(
+                            BirdDescriptionTable.TABLE_NAME,
+                            values,
+                            BirdDescriptionTable.ID
+                                    + "="
+                                    + birdDescriptionId
                                     + (TextUtils.isEmpty(selection)
                                     ? ""
                                     : " AND (" + selection + ")"),

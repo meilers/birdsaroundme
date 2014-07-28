@@ -11,6 +11,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v4.view.ViewPager;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,9 +27,11 @@ import com.sobremesa.birdwatching.database.BirdImageTable;
 import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.fragments.BirdsFragment;
 import com.sobremesa.birdwatching.managers.LocationManager;
+import com.sobremesa.birdwatching.models.remote.RemoteBirdDescription;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
+import com.sobremesa.birdwatching.tasks.DownloadBirdDescriptionTask;
 import com.sobremesa.birdwatching.util.LocationUtil;
 import com.viewpagerindicator.CirclePageIndicator;
 
@@ -62,6 +65,7 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
     private TextView mHowManyTv;
     private TextView mDateTv;
     private TextView mDistanceTv;
+    private TextView mDescriptionTv;
 
     public final static class Extras
     {
@@ -101,6 +105,8 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
         mHowManyTv = (TextView)findViewById(R.id.activity_bird_how_many_tv);
         mDateTv = (TextView)findViewById(R.id.activity_bird_date_tv);
         mDistanceTv = (TextView)findViewById(R.id.activity_bird_distance_tv);
+        mDescriptionTv = (TextView)findViewById(R.id.activity_bird_description_tv);
+
 
         updateView();
     }
@@ -110,6 +116,21 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
         super.onStart();
 
         getSupportLoaderManager().initLoader(0, null, this);
+
+        // TODO REMOVE
+        DownloadBirdDescriptionTask task = new DownloadBirdDescriptionTask(){
+            @Override
+            protected void onPostExecute(RemoteBirdDescription remoteBirdDescription) {
+                super.onPostExecute(remoteBirdDescription);
+
+                if( remoteBirdDescription != null ) {
+
+                    mDescriptionTv.setText(Html.fromHtml(remoteBirdDescription.getDescription()));
+                }
+            }
+        };
+
+        task.execute(mBird);
     }
 
 
