@@ -9,23 +9,9 @@
         android:orientation="vertical">
 
         <FrameLayout
+            android:id="@+id/activity_bird_images_container"
             android:layout_width="match_parent"
-            android:layout_height="300dp">
-
-            <android.support.v4.view.ViewPager
-                android:id="@+id/activity_bird_view_pager"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-            <com.viewpagerindicator.CirclePageIndicator
-                android:id="@+id/activity_bird_view_pager_indicator"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|bottom"
-                android:padding="@dimen/padding_medium" />
-
-
-        </FrameLayout>
+            android:layout_height="300dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -122,13 +108,12 @@
             </LinearLayout>
 
 
-            <TextView
-                android:id="@+id/activity_bird_description_tv"
-                android:layout_width="wrap_content"
-                android:layout_marginTop="@dimen/padding_large"
-                android:layout_height="wrap_content"
-                android:paddingLeft="@dimen/padding_medium"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+            <FrameLayout
+                android:id="@+id/activity_bird_description_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+
 
 
 

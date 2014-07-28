@@ -31,7 +31,7 @@ public class BirdDescriptionTable {
             + "("
             + ID + " integer primary key autoincrement, "
             + DESCRIPTION + " text not null, "
-            + SCI_NAME + " integer not null"
+            + SCI_NAME + " text not null"
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {

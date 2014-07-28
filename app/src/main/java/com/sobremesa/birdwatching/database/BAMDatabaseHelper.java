@@ -12,7 +12,7 @@ public class BAMDatabaseHelper extends SQLiteOpenHelper {
     private static BAMDatabaseHelper mInstance = null;
 
     public static final String DATABASE_NAME = "birdsaroundme.db";
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 5;
 
     public static BAMDatabaseHelper getInstance(Context ctx) {
 

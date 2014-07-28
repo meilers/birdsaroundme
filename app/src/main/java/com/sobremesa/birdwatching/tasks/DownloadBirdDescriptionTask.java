@@ -88,6 +88,7 @@ public class DownloadBirdDescriptionTask extends AsyncTask<RemoteSighting, Void,
                 ArrayList<RemoteBirdDescription> descriptions = new ArrayList<RemoteBirdDescription>(1);
                 RemoteBirdDescription description = new RemoteBirdDescription();
                 description.setDescription(descriptionStr);
+                Log.d("desssc", descriptionStr);
                 description.setSciName(bird.getSciName());
                 descriptions.add(description);
 

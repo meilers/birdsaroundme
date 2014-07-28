@@ -34,7 +34,7 @@ public class BirdImageTable {
             + ID + " integer primary key autoincrement, "
             + IMAGE_URL + " text not null, "
             + POSITION + " text not null,"
-            + SCI_NAME + " integer not null"
+            + SCI_NAME + " text not null"
             + ");";
 
     public static void onCreate(SQLiteDatabase database) {
