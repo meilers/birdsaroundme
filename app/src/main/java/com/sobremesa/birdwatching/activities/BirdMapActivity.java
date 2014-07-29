@@ -96,13 +96,17 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
 
                 mLoadImagesTask = new AsyncTask<ArrayList<RemoteBirdImage>,Void,Void>()
                 {
+                    private boolean mIsRunning = true;
+
                     @Override
                     protected Void doInBackground(ArrayList<RemoteBirdImage>... params) {
 
                         ArrayList<RemoteBirdImage> birdImages = params[0];
 
-                        for( RemoteBirdImage image : birdImages )
+                        for( int i=0; i < birdImages.size() && mIsRunning; ++i )
                         {
+                            RemoteBirdImage image = birdImages.get(i);
+
                             ImageSize targetSize = new ImageSize(UiUtil.convertDpToPixels(50,BirdMapActivity.this), UiUtil.convertDpToPixels(50,BirdMapActivity.this));
                             BAMApplication.getImageLoader().loadImageSync(image.getImageUrl(), targetSize);
                         }
@@ -113,8 +117,16 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
                     protected void onPostExecute(Void aVoid) {
                         super.onPostExecute(aVoid);
 
-                        marker.hideInfoWindow();
-                        marker.showInfoWindow();
+                        if( mIsRunning ) {
+                            Log.d("finished", "running");
+                            marker.hideInfoWindow();
+                            marker.showInfoWindow();
+                        }
+                    }
+
+                    @Override
+                    protected void onCancelled() {
+                        mIsRunning = false;
                     }
                 };
 
