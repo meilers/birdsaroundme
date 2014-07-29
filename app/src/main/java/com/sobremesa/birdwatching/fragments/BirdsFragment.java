@@ -11,7 +11,7 @@ import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.activities.BirdActivity;
 import com.sobremesa.birdwatching.activities.MainActivity;
 import com.sobremesa.birdwatching.adapters.BirdsAdapter;
-import com.sobremesa.birdwatching.adapters.SortsByAdapter;
+import com.sobremesa.birdwatching.adapters.SortByAdapter;
 import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.listeners.LocationListener;
 import com.sobremesa.birdwatching.listeners.SettingsListener;
@@ -174,7 +174,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         filter.addAction(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION);
         getActivity().registerReceiver(mImageBirdReceiver, filter);
 
-		getLoaderManager().initLoader(0, null, this);
+		getLoaderManager().initLoader(BAMConstants.SIGHTING_LOADER_ID, null, this);
 
         syncBirds();
 
@@ -391,7 +391,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         Resources r = getActivity().getResources();
         String[] sortBys = r.getStringArray(R.array.sort_bys_array);
 
-        final SortsByAdapter adapter = new SortsByAdapter(getActivity(), R.layout.list_item_dialog_list_selection, sortBys );
+        final SortByAdapter adapter = new SortByAdapter(getActivity(), R.layout.list_item_dialog_list_selection, sortBys );
         adapter.setSelectedIndex(SettingsManager.INSTANCE.getSettings().getSortBy().ordinal());
 
 

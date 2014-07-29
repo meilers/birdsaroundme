@@ -1,5 +1,6 @@
 package com.sobremesa.birdwatching.activities;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -15,6 +16,7 @@ import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -79,7 +81,7 @@ public class BirdActivity extends FragmentActivity {
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
         /* TODO remove */
-        getActionBar().hide();
+//        getActionBar().hide();
         /* END */
 
         setContentView(R.layout.activity_bird);
@@ -111,7 +113,23 @@ public class BirdActivity extends FragmentActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
 
+
+        switch (item.getItemId())
+        {
+            case R.id.action_map:
+                Intent intent = new Intent(this, BirdMapActivity.class);
+                Bundle extras = new Bundle();
+                extras.putParcelable(BirdMapActivity.Extras.BIRD, mBird);
+                intent.putExtras(extras);
+                startActivity(intent);
+                break;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
 
     private void updateView()
     {
