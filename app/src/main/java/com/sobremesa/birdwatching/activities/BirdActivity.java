@@ -125,6 +125,7 @@ public class BirdActivity extends FragmentActivity {
                 extras.putParcelable(BirdMapActivity.Extras.BIRD, mBird);
                 intent.putExtras(extras);
                 startActivity(intent);
+
                 break;
         }
 

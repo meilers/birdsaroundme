@@ -341,8 +341,6 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
                         if( birds != null )
                         {
-                            setBirdImages(birds);
-
                             mBirdsAdapter.notifyDataSetChanged();
                         }
 
