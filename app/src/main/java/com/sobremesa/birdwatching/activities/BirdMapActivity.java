@@ -13,9 +13,11 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -158,6 +160,12 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
         mMap.getUiSettings().setCompassEnabled(true);
         mMap.setMyLocationEnabled(true);
         mMap.setOnMarkerClickListener(mOnMarkerClickListener);
+        mMap.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+            @Override
+            public void onInfoWindowClick(Marker marker) {
+                marker.showInfoWindow(); // refresh images
+            }
+        });
 
         mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
 
@@ -171,14 +179,23 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
 
                 ArrayList<RemoteSighting> birds = mMarkerBirdsMap.get(marker);
 
-                if( birds != null )
+                if( birds != null && birds.size() > 0 )
                 {
                     View view = getLayoutInflater().inflate(R.layout.info_window, null);
+
+                    TextView titleTv = (TextView)view.findViewById(R.id.info_window_title_tv);
+                    TextView subtitleTv = (TextView)view.findViewById(R.id.info_window_subtitle_tv);
+                    LinearLayout imagesLayout = (LinearLayout)view.findViewById(R.id.info_window_images_layout);
+
                     ImageView iv1 = (ImageView)view.findViewById(R.id.info_window_iv1);
                     ImageView iv2 = (ImageView)view.findViewById(R.id.info_window_iv2);
                     ImageView iv3= (ImageView)view.findViewById(R.id.info_window_iv3);
                     ImageView iv4 = (ImageView)view.findViewById(R.id.info_window_iv4);
-                    ImageView iv5 = (ImageView)view.findViewById(R.id.info_window_iv5);
+                    ImageView iv5 = (ImageView)view.findViewById(R.id.info_window_iv4);
+                    TextView tv5 = (TextView)view.findViewById(R.id.info_window_tv5);
+                    FrameLayout layout5 = (FrameLayout)view.findViewById(R.id.info_window_layout5);
+
+                    titleTv.setText(birds.get(0).getLocName());
 
                     ArrayList<RemoteBirdImage> birdImages = new ArrayList<RemoteBirdImage>();
 
@@ -192,6 +209,7 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
 
                     if( birdImages.size() > 0 )
                     {
+                        imagesLayout.setVisibility(View.VISIBLE);
                         iv1.setVisibility(View.VISIBLE);
                         BAMApplication.getImageLoader().displayImage(birdImages.get(0).getImageUrl(), iv1);
 
@@ -207,20 +225,59 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
 
                                 if( birdImages.size() > 3 )
                                 {
+
                                     iv4.setVisibility(View.VISIBLE);
                                     BAMApplication.getImageLoader().displayImage(birdImages.get(3).getImageUrl(), iv4);
 
-                                    if( birdImages.size() > 4 )
-                                    {
+                                    if( birdImages.size() > 4) {
+                                        layout5.setVisibility(View.VISIBLE);
+
+                                        if (birdImages.size() == 4) {
+                                            iv5.setVisibility(View.VISIBLE);
+                                            BAMApplication.getImageLoader().displayImage(birdImages.get(4).getImageUrl(), iv5);
+                                        } else {
+                                            tv5.setVisibility(View.VISIBLE);
+                                            tv5.setText("+" + (birds.size() - 4));
+                                        }
+                                    }
+                                    else {
+                                        if (birds.size() > 4) {
+                                            layout5.setVisibility(View.VISIBLE);
+                                            tv5.setVisibility(View.VISIBLE);
+                                            tv5.setText("+" + (birds.size() - 4));
+                                        }
+                                    }
+                                }
+                                else {
+                                    if (birds.size() > 3) {
+                                        layout5.setVisibility(View.VISIBLE);
+                                        tv5.setVisibility(View.VISIBLE);
+                                        tv5.setText("+" + (birds.size() - 3));
                                     }
                                 }
                             }
-
+                            else {
+                                if (birds.size() > 2) {
+                                    layout5.setVisibility(View.VISIBLE);
+                                    tv5.setVisibility(View.VISIBLE);
+                                    tv5.setText("+" + (birds.size() - 2));
+                                }
+                            }
+                        }
+                        else {
+                            if( birds.size() > 1 )
+                            {
+                                layout5.setVisibility(View.VISIBLE);
+                                tv5.setVisibility(View.VISIBLE);
+                                tv5.setText("+" + (birds.size() - 1));
+                            }
                         }
                     }
-
-                    view.setLayoutParams(new LinearLayout.LayoutParams(UiUtil.convertDpToPixels(INFO_WINDOW_IMAGE_SIZE*5 + 2*INFO_WINDOW_PADDING, BirdMapActivity.this), LinearLayout.LayoutParams.WRAP_CONTENT));
-
+                    else
+                    {
+                        subtitleTv.setVisibility(View.VISIBLE);
+                        subtitleTv.setText(birds.size() + (birds.size() > 1 ? " birds" : " bird") );
+                    }
 
                     return view;
                 }
@@ -376,7 +433,7 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
         for (Map.Entry<LatLng, ArrayList<RemoteSighting>> entry : mLocationBirdsMap.entrySet()) {
             ArrayList<RemoteSighting> birds = (entry.getValue());
             RemoteSighting firstBird = birds.get(0);
-            markerOptions = new MarkerOptions().position(entry.getKey()).title(firstBird.getLocName()).snippet(birds.size() + " birds");
+            markerOptions = new MarkerOptions().position(entry.getKey()).title(firstBird.getLocName()).snippet(birds.size() + (birds.size() > 1 ? " birds" : " bird") );
 
             if (mSelectedBird != null)
             {
@@ -384,7 +441,6 @@ public class BirdMapActivity extends FragmentActivity implements LoaderManager.L
                 LatLng selectedBirdLocation = new LatLng(mSelectedBird.getLat(), mSelectedBird.getLng());
 
                 if( selectedBirdLocation.equals(birdLocation)) {
-                    markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
                     isSelectedMarker = true;
                 }
             }
