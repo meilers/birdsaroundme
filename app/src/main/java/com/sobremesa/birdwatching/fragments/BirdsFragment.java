@@ -25,8 +25,10 @@ import com.sobremesa.birdwatching.services.BirdImageService;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
 import com.sobremesa.birdwatching.tasks.PopulateBirdImagesTask;
 import com.sobremesa.birdwatching.util.AnalyticsUtil;
+import com.sobremesa.birdwatching.views.SoftKeyboardHandledLinearLayout;
 
 import android.app.AlertDialog;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -47,13 +49,18 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 
 public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, LocationListener, SettingsListener {
 
 	public static final String TAG = BirdsFragment.class.getSimpleName();
+
+    private ArrayList<RemoteSighting> mFullBirds;
 
     private ArrayList<RemoteSighting> mBirds;
     private HashMap<String, RemoteSighting> mBirdMap;
@@ -63,6 +70,11 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
     private BirdsAdapter mBirdsAdapter;
     private GridView mBirdsGv;
+
+    // Search
+    private MenuItem mSearchMenuItem;
+    private SearchView mSearchView;
+    private String mSearchStr = "";
 
     private DownloadSightingsTask mDownloadSightingsTask;
     private PopulateBirdImagesTask mPopulateImagesTask;
@@ -137,6 +149,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
+        mFullBirds = new ArrayList<RemoteSighting>();
         mBirds = new ArrayList<RemoteSighting>();
         mBirdMap = new HashMap<String, RemoteSighting>();
         mBirdPositionMap = new HashMap<String, Integer>();
@@ -213,16 +226,85 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         super.onCreateOptionsMenu(menu, inflater);
 
         inflater.inflate(R.menu.birds, menu);
+
+        SearchManager manager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+        mSearchMenuItem = menu.findItem(R.id.action_search);
+        mSearchView = (SearchView) mSearchMenuItem.getActionView();
+
+        // Image
+        int searchImgId = getResources().getIdentifier("android:id/search_button", null, null);
+        ImageView searchIv = (ImageView) mSearchView.findViewById(searchImgId);
+        searchIv.setImageResource(R.drawable.ic_action_search);
+
+        // Text
+        int searchEtId = getResources().getIdentifier("android:id/search_src_text", null, null);
+        final EditText searchEt = (EditText) mSearchView.findViewById(searchEtId);
+        searchEt.setTextColor(getResources().getColor(android.R.color.black));
+        searchEt.setHintTextColor(getResources().getColor(android.R.color.darker_gray));
+        searchEt.setHint("Enter common name");
+
+        mSearchView.setSearchableInfo(manager.getSearchableInfo(getActivity().getComponentName()));
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                mSearchStr = query;
+                updateGridView(mSearchStr);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+                mSearchStr = newText;
+                updateGridView(mSearchStr);
+                return false;
+            }
+        });
+
+        mSearchMenuItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                mSearchStr = "";
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                mSearchStr = "";
+                updateGridView(mSearchStr);
+                return true;
+            }
+        });
+
+        mSearchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean queryTextFocused) {
+                if(!queryTextFocused) {
+                    mSearchMenuItem.collapseActionView();
+                }
+            }
+        });
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId() )
         {
+            case R.id.action_search:
+
+//                if( mSearchMenuItem != null )
+//                    mSearchMenuItem.collapseActionView();
+                break;
+
             case R.id.action_settings:
                 showSortByDialog();
                 break;
+
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -292,71 +374,25 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 	@Override
 	public void onLoadFinished(Loader<Cursor> loader, final Cursor cursor) {
 
-        Log.d("load", "finished");
         if( cursor != null )
         {
 
-            if( cursor.getCount() > 0 ) {
+            mFullBirds.clear();
 
-                int i = 0;
-
-                mBirds.clear();
-                mBirdMap.clear();
-                mBirdPositionMap.clear();
-
-                for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-                    RemoteSighting bird = new RemoteSighting(cursor);
-                    mBirds.add(bird);
-                    mBirdMap.put(bird.getSciName(), bird);
-                    mBirdPositionMap.put(bird.getSciName(), i);
-
-                    ++i;
-                }
-
-                switch (SettingsManager.INSTANCE.getSettings().getSortBy())
-                {
-                    case DATE:
-                        Collections.sort(mBirds, new RemoteSighting.DateComparator());
-                        break;
-
-                    case NAME:
-                        Collections.sort(mBirds, new RemoteSighting.NameComparator());
-                        break;
-
-                    case DISTANCE:
-                        Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
-                        break;
-                }
-
-
-                // Populate Existing Images
-                if( mPopulateImagesTask != null )
-                    mPopulateImagesTask.cancel(true);
-
-                mPopulateImagesTask = new PopulateBirdImagesTask()
-                {
-                    @Override
-                    protected void onPostExecute(List<RemoteSighting> birds) {
-                        super.onPostExecute(birds);
-
-                        if( birds != null )
-                        {
-                            mBirdsAdapter.notifyDataSetChanged();
-                        }
-
-                    }
-                };
-
-                mPopulateImagesTask.execute(mBirds);
-
-
-                // Update Title
-                MainActivity act = (MainActivity)getActivity();
-
-                if( act != null )
-                    act.setTitle(cursor.getCount() + " Birds (within 50 km)");
+            for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
+                RemoteSighting bird = new RemoteSighting(cursor);
+                mFullBirds.add(bird);
             }
 
+
+            // Update Grid View
+            updateGridView(mSearchStr);
+
+            // Update Title
+            MainActivity act = (MainActivity)getActivity();
+
+            if( act != null )
+                act.setTitle(cursor.getCount() + " Birds (within 50 km)");
 
         }
 
@@ -369,14 +405,65 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
     }
 
 
+    private void updateGridView(String searchStr)
+    {
+        mBirds.clear();
+        mBirdMap.clear();
+        mBirdPositionMap.clear();
 
-    @Override
-    public void locationEventReceived() {
+        int i = 0;
+
+        for( RemoteSighting bird : mFullBirds )
+        {
+            if( searchStr == null || searchStr.isEmpty() || bird.getComName().toLowerCase().contains(searchStr.toLowerCase())) {
+                mBirds.add(bird);
+                mBirdMap.put(bird.getSciName(), bird);
+                mBirdPositionMap.put(bird.getSciName(), i);
+
+                ++i;
+            }
+        }
+
+        switch (SettingsManager.INSTANCE.getSettings().getSortBy())
+        {
+            case DATE:
+                Collections.sort(mBirds, new RemoteSighting.DateComparator());
+                break;
+
+            case NAME:
+                Collections.sort(mBirds, new RemoteSighting.NameComparator());
+                break;
+
+            case DISTANCE:
+                Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
+                break;
+        }
+
+        // Update right away if we're searching
+        if( searchStr != null || !searchStr.isEmpty() )
+            mBirdsAdapter.notifyDataSetChanged();
 
 
-        syncBirds();
+        // Populate Existing Images
+        if( mPopulateImagesTask != null )
+            mPopulateImagesTask.cancel(true);
+
+        mPopulateImagesTask = new PopulateBirdImagesTask()
+        {
+            @Override
+            protected void onPostExecute(List<RemoteSighting> birds) {
+                super.onPostExecute(birds);
+
+                if( birds != null )
+                {
+                    mBirdsAdapter.notifyDataSetChanged();
+                }
+
+            }
+        };
+
+        mPopulateImagesTask.execute(mBirds);
     }
-
 
     private void showSortByDialog()
     {
@@ -442,6 +529,20 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         }
     }
 
+
+
+
+    // EVENTS
+
+    @Override
+    public void locationEventReceived() {
+
+
+        syncBirds();
+    }
+
+
+
     @Override
     public void settingsEventReceived() {
         switch (SettingsManager.INSTANCE.getSettings().getSortBy())
@@ -462,6 +563,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
         mBirdsAdapter.notifyDataSetChanged();
     }
+
 
 
 }

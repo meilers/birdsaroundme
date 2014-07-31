@@ -27,6 +27,7 @@ import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.fragments.BirdsFragment;
 import com.sobremesa.birdwatching.managers.LocationManager;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
+import com.sobremesa.birdwatching.views.SoftKeyboardHandledLinearLayout;
 
 import java.io.IOException;
 import java.util.List;
@@ -121,7 +122,6 @@ public class MainActivity extends FragmentActivity {
     private boolean mIsInResolution;
 
     private Location mLocation;
-
 
     /**
      * Called when the activity is starting. Restores the activity state.
@@ -291,4 +291,6 @@ public class MainActivity extends FragmentActivity {
         // Showing Alert Message
         alertDialog.show();
     }
+
+
 }
