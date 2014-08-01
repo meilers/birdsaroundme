@@ -12,7 +12,7 @@ public class BAMDatabaseHelper extends SQLiteOpenHelper {
     private static BAMDatabaseHelper mInstance = null;
 
     public static final String DATABASE_NAME = "birdsaroundme.db";
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 8;
 
     public static BAMDatabaseHelper getInstance(Context ctx) {
 
@@ -38,6 +38,7 @@ public class BAMDatabaseHelper extends SQLiteOpenHelper {
         SightingTable.onCreate(database);
         BirdImageTable.onCreate(database);
         BirdDescriptionTable.onCreate(database);
+        BirdSoundTable.onCreate(database);
     }
 
     // Method is called during an upgrade of the database,
@@ -48,6 +49,7 @@ public class BAMDatabaseHelper extends SQLiteOpenHelper {
         SightingTable.onUpgrade(database, oldVersion, newVersion);
         BirdImageTable.onUpgrade(database, oldVersion, newVersion);
         BirdDescriptionTable.onUpgrade(database, oldVersion, newVersion);
+        BirdSoundTable.onUpgrade(database, oldVersion, newVersion);
     }
 
     @Override

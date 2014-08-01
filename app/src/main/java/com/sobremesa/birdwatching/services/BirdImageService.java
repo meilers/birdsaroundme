@@ -153,7 +153,7 @@ public class BirdImageService extends IntentService {
                             new String[]{bird.getSciName()}, null);
                     localBirdImageCursor.moveToFirst();
                     SyncUtil.synchronizeRemoteBirdImages(birdImages, localBirdImageCursor,
-                            localBirdImageCursor.getColumnIndex(BirdImageTable.IMAGE_URL), localBirdImageCursor.getColumnIndex(SightingTable.SCI_NAME),
+                            localBirdImageCursor.getColumnIndex(BirdImageTable.IMAGE_URL),
                             new BirdImageSynchronizer(context), null);
                     localBirdImageCursor.close();
 

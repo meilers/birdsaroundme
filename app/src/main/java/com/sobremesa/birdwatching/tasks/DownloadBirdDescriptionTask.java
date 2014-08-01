@@ -94,7 +94,7 @@ public class DownloadBirdDescriptionTask extends AsyncTask<RemoteSighting, Void,
 
                 Cursor localBirdDescriptionCursor = context.getContentResolver().query(BAMContentProvider.Uris.BIRD_DESCRIPTIONS_URI, BirdDescriptionTable.ALL_COLUMNS, BirdDescriptionTable.SCI_NAME + "=?", new String[] {bird.getSciName()}, null);
                 localBirdDescriptionCursor.moveToFirst();
-                SyncUtil.synchronizeRemoteBirdDescriptions(descriptions, localBirdDescriptionCursor, localBirdDescriptionCursor.getColumnIndex(BirdDescriptionTable.DESCRIPTION), localBirdDescriptionCursor.getColumnIndex(BirdDescriptionTable.SCI_NAME),
+                SyncUtil.synchronizeRemoteBirdDescriptions(descriptions, localBirdDescriptionCursor, localBirdDescriptionCursor.getColumnIndex(BirdDescriptionTable.DESCRIPTION),
                         new BirdDescriptionSynchronizer(context), null);
                 localBirdDescriptionCursor.close();
 

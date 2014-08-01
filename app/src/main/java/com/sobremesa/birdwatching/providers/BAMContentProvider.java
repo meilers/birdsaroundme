@@ -15,6 +15,7 @@ import android.util.Log;
 import com.sobremesa.birdwatching.database.BAMDatabaseHelper;
 import com.sobremesa.birdwatching.database.BirdDescriptionTable;
 import com.sobremesa.birdwatching.database.BirdImageTable;
+import com.sobremesa.birdwatching.database.BirdSoundTable;
 import com.sobremesa.birdwatching.database.SightingTable;
 
 import java.util.HashMap;
@@ -35,13 +36,14 @@ public class BAMContentProvider extends ContentProvider {
         public static final Uri SIGHTINGS_GROUP_BY_BIRD_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.SIGHTINGS + "/" + "BIRD");
         public static final Uri BIRD_IMAGES_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.BIRD_IMAGES);
         public static final Uri BIRD_DESCRIPTIONS_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.BIRD_DESCRIPTIONS);
-
+        public static final Uri BIRD_SOUNDS_URI = Uri.parse(SCHEME + "://" + AUTHORITY + "/" + Paths.BIRD_SOUNDS);
     }
 
     public static final class Paths {
         public static final String SIGHTINGS = "sightings";
         public static final String BIRD_IMAGES = "birdImages";
         public static final String BIRD_DESCRIPTIONS = "birdDescriptions";
+        public static final String BIRD_SOUNDS = "birdSounds";
     }
 
 
@@ -52,6 +54,8 @@ public class BAMContentProvider extends ContentProvider {
     private static final int BIRD_IMAGE_ID = 4;
     private static final int BIRD_DESCRIPTIONS_DIR = 5;
     private static final int BIRD_DESCRIPTION_ID = 6;
+    private static final int BIRD_SOUNDS_DIR = 7;
+    private static final int BIRD_SOUND_ID = 8;
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -70,7 +74,8 @@ public class BAMContentProvider extends ContentProvider {
         sURIMatcher.addURI(AUTHORITY, Paths.BIRD_IMAGES + "/#", BIRD_IMAGE_ID);
         sURIMatcher.addURI(AUTHORITY, Paths.BIRD_DESCRIPTIONS, BIRD_DESCRIPTIONS_DIR);
         sURIMatcher.addURI(AUTHORITY, Paths.BIRD_DESCRIPTIONS + "/#", BIRD_DESCRIPTION_ID);
-
+        sURIMatcher.addURI(AUTHORITY, Paths.BIRD_SOUNDS, BIRD_SOUNDS_DIR);
+        sURIMatcher.addURI(AUTHORITY, Paths.BIRD_SOUNDS + "/#", BIRD_SOUND_ID);
 
         // projections
         sSightingsProjectionMap = new HashMap<String, String>();
@@ -122,6 +127,10 @@ public class BAMContentProvider extends ContentProvider {
             case BIRD_DESCRIPTIONS_DIR:
                 return ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + Paths.BIRD_DESCRIPTIONS;
 
+            case BIRD_SOUND_ID:
+                return ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + Paths.BIRD_SOUNDS;
+            case BIRD_SOUNDS_DIR:
+                return ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + Paths.BIRD_SOUNDS;
 
             default:
                 throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -166,6 +175,14 @@ public class BAMContentProvider extends ContentProvider {
             case BIRD_DESCRIPTIONS_DIR:
                 queryBuilder.setTables(BirdDescriptionTable.TABLE_NAME);
                 break;
+
+            case BIRD_SOUND_ID:
+                queryBuilder.appendWhere(BirdSoundTable.ID + "="
+                        + uri.getLastPathSegment());
+            case BIRD_SOUNDS_DIR:
+                queryBuilder.setTables(BirdSoundTable.TABLE_NAME);
+                break;
+
 
 
             default:
@@ -226,6 +243,17 @@ public class BAMContentProvider extends ContentProvider {
                     dbConnection.setTransactionSuccessful();
                     return newBirdDescription;
 
+                case BIRD_SOUNDS_DIR:
+                case BIRD_SOUND_ID:
+                    final long birdSoundId = dbConnection.insertOrThrow(
+                            BirdSoundTable.TABLE_NAME, null, values);
+                    final Uri newBirdSound = ContentUris.withAppendedId(
+                            Uris.BIRD_SOUNDS_URI, birdSoundId);
+//                    getContext().getContentResolver().notifyChange(newBird,
+//                            null);
+                    dbConnection.setTransactionSuccessful();
+                    return newBirdSound;
+
 
                 default:
                     throw new IllegalArgumentException("Unknown URI: " + uri);
@@ -285,6 +313,21 @@ public class BAMContentProvider extends ContentProvider {
                                     .getPathSegments().get(1)});
                     dbConnection.setTransactionSuccessful();
                     break;
+
+                case BIRD_SOUNDS_DIR :
+                    deleteCount = dbConnection.delete(BirdSoundTable.TABLE_NAME,
+                            selection, selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+                case BIRD_SOUND_ID :
+                    deleteCount = dbConnection.delete(BirdSoundTable.TABLE_NAME,
+                            BirdSoundTable.ID + "=?", new String[]{uri
+                                    .getPathSegments().get(1)});
+                    dbConnection.setTransactionSuccessful();
+                    break;
+
+
+
                 default :
                     throw new IllegalArgumentException("Unsupported URI:" + uri);
             }
@@ -365,6 +408,27 @@ public class BAMContentProvider extends ContentProvider {
                             BirdDescriptionTable.ID
                                     + "="
                                     + birdDescriptionId
+                                    + (TextUtils.isEmpty(selection)
+                                    ? ""
+                                    : " AND (" + selection + ")"),
+                            selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+
+
+                case BIRD_SOUNDS_DIR :
+                    updateCount = dbConnection.update(BirdSoundTable.TABLE_NAME,
+                            values, selection, selectionArgs);
+                    dbConnection.setTransactionSuccessful();
+                    break;
+                case BIRD_SOUND_ID :
+                    final Long birdSoundIId = ContentUris.parseId(uri);
+                    updateCount = dbConnection.update(
+                            BirdSoundTable.TABLE_NAME,
+                            values,
+                            BirdSoundTable.ID
+                                    + "="
+                                    + birdSoundIId
                                     + (TextUtils.isEmpty(selection)
                                     ? ""
                                     : " AND (" + selection + ")"),

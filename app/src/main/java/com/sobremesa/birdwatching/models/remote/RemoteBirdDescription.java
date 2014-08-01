@@ -25,11 +25,6 @@ public class RemoteBirdDescription extends RemoteObject implements Parcelable {
         return description;
     }
 
-    @Override
-    public String getIdentifier2() {
-        return sciName;
-    }
-
 
     public RemoteBirdDescription() {}
 

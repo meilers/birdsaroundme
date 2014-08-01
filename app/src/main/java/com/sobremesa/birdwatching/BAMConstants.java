@@ -14,5 +14,5 @@ public class BAMConstants {
     public static final int SIGHTING_LOADER_ID = 0;
     public static final int BIRD_IMAGE_LOADER_ID = 1;
     public static final int BIRD_DESCRIPTION_LOADER_ID = 2;
-
+    public static final int BIRD_SOUND_LOADER_ID = 3;
 }

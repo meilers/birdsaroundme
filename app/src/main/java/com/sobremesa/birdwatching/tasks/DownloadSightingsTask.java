@@ -34,8 +34,6 @@ public class DownloadSightingsTask extends AsyncTask<Double, Void, ArrayList<Rem
 
         try {
             ArrayList<RemoteSighting> sightings = client.downloadSightings(params[0], params[1], 50, 30, "json");
-            Collections.sort(sightings, new RemoteSighting.DateComparator());
-
 
             Cursor localSightingCursor = context.getContentResolver().query(BAMContentProvider.Uris.SIGHTINGS_URI, SightingTable.ALL_COLUMNS, null, null, null);
             localSightingCursor.moveToFirst();

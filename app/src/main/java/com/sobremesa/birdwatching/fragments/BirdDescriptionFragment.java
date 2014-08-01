@@ -117,13 +117,19 @@ public class BirdDescriptionFragment extends Fragment implements LoaderManager.L
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 
-        if( cursor != null && cursor.getCount() > 0 )
+        switch (loader.getId())
         {
-            cursor.moveToFirst();
+            case BAMConstants.BIRD_DESCRIPTION_LOADER_ID:
+                if( cursor != null && cursor.getCount() > 0 )
+                {
+                    cursor.moveToFirst();
 
-            RemoteBirdDescription description = new RemoteBirdDescription(cursor);
-            mDescriptionTv.setText(Html.fromHtml(description.getDescription()));
+                    RemoteBirdDescription description = new RemoteBirdDescription(cursor);
+                    mDescriptionTv.setText(Html.fromHtml(description.getDescription()));
+                }
+                break;
         }
+
     }
 
     @Override

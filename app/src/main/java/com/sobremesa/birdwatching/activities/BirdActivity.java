@@ -2,7 +2,6 @@ package com.sobremesa.birdwatching.activities;
 
 import android.content.Intent;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
@@ -11,33 +10,22 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.view.ViewPager;
-import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
-import com.sobremesa.birdwatching.BAMApplication;
+import com.sobremesa.birdwatching.BAMConstants;
 import com.sobremesa.birdwatching.R;
-import com.sobremesa.birdwatching.adapters.BirdImagesPagerAdapter;
-import com.sobremesa.birdwatching.database.BirdImageTable;
-import com.sobremesa.birdwatching.database.SightingTable;
+import com.sobremesa.birdwatching.database.BirdSoundTable;
 import com.sobremesa.birdwatching.fragments.BirdDescriptionFragment;
 import com.sobremesa.birdwatching.fragments.BirdImagePagerFragment;
-import com.sobremesa.birdwatching.fragments.BirdsFragment;
 import com.sobremesa.birdwatching.managers.LocationManager;
-import com.sobremesa.birdwatching.models.remote.RemoteBirdDescription;
-import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
+import com.sobremesa.birdwatching.models.remote.RemoteBirdSound;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
-import com.sobremesa.birdwatching.tasks.DownloadBirdDescriptionTask;
+import com.sobremesa.birdwatching.tasks.DownloadBirdSoundsTask;
 import com.sobremesa.birdwatching.util.LocationUtil;
-import com.viewpagerindicator.CirclePageIndicator;
 
 
 import java.text.ParseException;
@@ -45,13 +33,21 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 /**
  * Created by omegatai on 2014-07-09.
  */
-public class BirdActivity extends FragmentActivity {
+public class BirdActivity extends FragmentActivity implements LoaderManager.LoaderCallbacks<Cursor> {
+
+    private static final String TAG = BirdActivity.class.getSimpleName();
+
+
+    public final static class Extras
+    {
+        public static final String BIRD = "bird";
+    }
+
 
 
     private RemoteSighting mBird;
@@ -63,11 +59,7 @@ public class BirdActivity extends FragmentActivity {
     private TextView mDateTv;
     private TextView mDistanceTv;
 
-    public final static class Extras
-    {
-        public static final String BIRD = "bird";
-    }
-
+    private DownloadBirdSoundsTask mDownloadBirdSoundsTask;
 
 
 
@@ -105,6 +97,26 @@ public class BirdActivity extends FragmentActivity {
     }
 
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        mDownloadBirdSoundsTask = new DownloadBirdSoundsTask();
+        mDownloadBirdSoundsTask.execute(mBird.getComName());
+
+        getSupportLoaderManager().initLoader(BAMConstants.BIRD_SOUND_LOADER_ID, null, this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        if( mDownloadBirdSoundsTask != null )
+        {
+            mDownloadBirdSoundsTask.cancel(true);
+            mDownloadBirdSoundsTask = null;
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -190,5 +202,35 @@ public class BirdActivity extends FragmentActivity {
 
             mDistanceTv.setText(String.format("%.2f Km", distanceInKm));
         }
+    }
+
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        switch (id) {
+            case BAMConstants.BIRD_SOUND_LOADER_ID:
+            return new CursorLoader(this, BAMContentProvider.Uris.BIRD_SOUNDS_URI, BirdSoundTable.ALL_COLUMNS, BirdSoundTable.COM_NAME + "=?", new String[]{mBird.getComName()}, null);
+        }
+
+        return  null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+        switch (loader.getId()) {
+            case BAMConstants.BIRD_SOUND_LOADER_ID:
+                if( cursor != null )
+                {
+                    Log.d("bird sound count", cursor.getCount() + "");
+                }
+                break;
+        }
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 }

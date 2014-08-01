@@ -28,10 +28,6 @@ public class RemoteBirdImage extends RemoteObject implements Parcelable {
         return imageUrl;
     }
 
-    @Override
-    public String getIdentifier2() {
-        return sciName;
-    }
 
 
     public RemoteBirdImage() {}
