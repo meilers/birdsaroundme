@@ -138,6 +138,11 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
         switch (item.getItemId())
         {
+            case android.R.id.home:
+                // do something useful
+                finish();
+                break;
+
             case R.id.action_sounds:
 
                 FragmentManager fm = getSupportFragmentManager();

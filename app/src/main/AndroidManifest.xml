@@ -48,6 +48,13 @@
         <service android:name=".services.BirdImageService" >
         </service>
 
+        <service
+            android:name=".services.BirdSoundPlayer" >
+            <intent-filter>
+                <action android:name=".services.PLAY" />
+                <action android:name=".services.PAUSE" />
+            </intent-filter>
+        </service>
 
         <meta-data android:name="com.crashlytics.ApiKey" android:value="b17c0437d4598d9e613f882c5292896d9e944268"/>
 

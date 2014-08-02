@@ -2,6 +2,10 @@ package com.sobremesa.birdwatching.fragments;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
@@ -11,18 +15,24 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.BAMConstants;
 import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.adapters.BirdSoundsAdapter;
 import com.sobremesa.birdwatching.database.BirdSoundTable;
+import com.sobremesa.birdwatching.models.SoundStateType;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdSound;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
+import com.sobremesa.birdwatching.services.BirdImageService;
+import com.sobremesa.birdwatching.services.BirdSoundPlayer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Created by omegatai on 2014-07-31.
@@ -40,7 +50,35 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
 
     private RemoteSighting mBird;
     private ArrayList<RemoteBirdSound> mBirdSounds;
+
     private BirdSoundsAdapter mBirdSoundsAdapter;
+
+    private String mPlayingSoundId;
+    private SoundStateType mPlayingSoundStateType;
+
+    private final BroadcastReceiver mBirdSoundStateReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(action.equals(BirdSoundPlayer.Actions.ACTION_BROADCAST_PLAY_STATE)){
+
+                mPlayingSoundId = intent.getExtras().getString(BirdSoundPlayer.Extras.BROADCAST_PLAYING_SOUND_ID);
+                mPlayingSoundStateType = SoundStateType.values()[intent.getExtras().getInt(BirdSoundPlayer.Extras.BROADCAST_PLAY_STATE)];
+
+                if( mPlayingSoundStateType != SoundStateType.PLAYING && mPlayingSoundStateType != SoundStateType.BUFFERING )
+                    mPlayingSoundId = null;
+
+                // Update Lv
+                if( mBirdSoundsAdapter != null )
+                {
+                    mBirdSoundsAdapter.setPlayingSound(mPlayingSoundId, mPlayingSoundStateType);
+                    mBirdSoundsAdapter.notifyDataSetChanged();
+                }
+
+            }
+        }
+    };
 
     public static final BirdSoundsDialogFragment newInstance(RemoteSighting bird)  {
         BirdSoundsDialogFragment f = new BirdSoundsDialogFragment();
@@ -64,6 +102,7 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
 
         mBird = getArguments().getParcelable(Extras.BIRD);
         mBirdSounds = new ArrayList<RemoteBirdSound>();
+
         mBirdSoundsAdapter = new BirdSoundsAdapter(getActivity(), mBirdSounds);
 
     }
@@ -80,6 +119,30 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
 
         mBirdSoundsLv = (ListView)view.findViewById(R.id.dialog_fragment_bird_sounds_lv);
         mBirdSoundsLv.setAdapter(mBirdSoundsAdapter);
+        mBirdSoundsLv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if( getActivity() != null ) {
+
+
+                    ArrayList<RemoteBirdSound> soundsQueued = new ArrayList<RemoteBirdSound>(mBirdSounds.subList(position, mBirdSounds.size()));
+
+                    RemoteBirdSound sound = soundsQueued.get(0);
+                    final Intent intent = new Intent(getActivity(), BirdSoundPlayer.class);
+                    getActivity().stopService(intent);
+
+                    if( !sound.getBirdSoundId().equals(mPlayingSoundId))
+                    {
+                        Log.d("starting SERVICE", "fdsfsd");
+                        intent.putParcelableArrayListExtra(BirdSoundPlayer.Extras.BIRD_SOUNDS, soundsQueued);
+                        intent.setAction(BirdSoundPlayer.Actions.ACTION_PLAY);
+                        getActivity().startService(intent);
+                    }
+
+                }
+            }
+        });
+
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setView(view);
@@ -95,7 +158,18 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
     public void onStart() {
         super.onStart();
 
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BirdSoundPlayer.Actions.ACTION_BROADCAST_PLAY_STATE);
+        getActivity().registerReceiver(mBirdSoundStateReceiver, filter);
+
         getActivity().getSupportLoaderManager().initLoader(BAMConstants.BIRD_SOUND_LOADER_ID, null, this);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        getActivity().unregisterReceiver(mBirdSoundStateReceiver);
     }
 
     @Override

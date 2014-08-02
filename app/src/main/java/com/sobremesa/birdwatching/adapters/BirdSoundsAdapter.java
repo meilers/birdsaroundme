@@ -3,17 +3,20 @@ package com.sobremesa.birdwatching.adapters;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.location.Location;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.managers.LocationManager;
+import com.sobremesa.birdwatching.models.SoundStateType;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdImage;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdSound;
 import com.sobremesa.birdwatching.util.LocationUtil;
@@ -35,14 +38,19 @@ public class BirdSoundsAdapter extends BaseAdapter
     private Context mContext;
 
     private List<RemoteBirdSound> mBirdSoundsList;
-
+    private String mPlayingSoundId;
+    private SoundStateType mPlayingSoundStateType;
 
     public BirdSoundsAdapter(Context context, List<RemoteBirdSound> birdSoundsList) {
         this.mContext = context;
         this.mBirdSoundsList = birdSoundsList;
-
     }
 
+    public void setPlayingSound(String soundId, SoundStateType playState )
+    {
+        mPlayingSoundId = soundId;
+        mPlayingSoundStateType = playState;
+    }
 
     public int getCount() {
         return mBirdSoundsList.size();
@@ -70,7 +78,8 @@ public class BirdSoundsAdapter extends BaseAdapter
             holder.mTypeTv = (TextView)convertView.findViewById(R.id.list_item_bird_sound_type_tv);
             holder.mLocTv = (TextView)convertView.findViewById(R.id.list_item_bird_sound_loc_tv);
             holder.mAuthorTv = (TextView)convertView.findViewById(R.id.list_item_bird_sound_author_tv);
-
+            holder.mPlayIv = (ImageView)convertView.findViewById(R.id.list_item_bird_sound_play_iv);
+            holder.mPlayPb = (ProgressBar)convertView.findViewById(R.id.list_item_bird_sound_play_progress_bar);
             convertView.setTag(holder);
         }
 
@@ -108,6 +117,43 @@ public class BirdSoundsAdapter extends BaseAdapter
         }
 
 
+        // Play State
+        Log.d("HERE", "IN ADAPTER");
+        if( mPlayingSoundId != null && birdSound.getBirdSoundId().equals(mPlayingSoundId) )
+        {
+            Log.d("HERE", "playing sound id");
+
+            switch (mPlayingSoundStateType)
+            {
+
+                case PAUSED:
+                case STOPPED:
+                    Log.d("HERE", "pause");
+                    holder.mPlayPb.setVisibility(View.GONE);
+                    holder.mPlayIv.setVisibility(View.VISIBLE);
+                    holder.mPlayIv.setImageResource(R.drawable.ic_action_play);
+                    break;
+
+                case BUFFERING:
+                    Log.d("HERE", "HEEEERE");
+                    holder.mPlayPb.setVisibility(View.VISIBLE);
+                    holder.mPlayIv.setVisibility(View.GONE);
+                    break;
+
+                case PLAYING:
+                    holder.mPlayPb.setVisibility(View.GONE);
+                    holder.mPlayIv.setVisibility(View.VISIBLE);
+                    holder.mPlayIv.setImageResource(R.drawable.ic_action_pause);
+                    break;
+            }
+        }
+        else
+        {
+            holder.mPlayPb.setVisibility(View.GONE);
+            holder.mPlayIv.setVisibility(View.VISIBLE);
+            holder.mPlayIv.setImageResource(R.drawable.ic_action_play);
+        }
+
         return convertView;
     }
 
@@ -116,6 +162,8 @@ public class BirdSoundsAdapter extends BaseAdapter
         private TextView mTypeTv;
         private TextView mLocTv;
         private TextView mAuthorTv;
+        private ProgressBar mPlayPb;
+        private ImageView mPlayIv;
     }
 }
 
