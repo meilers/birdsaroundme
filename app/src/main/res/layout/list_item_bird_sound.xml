@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:padding="@dimen/padding_medium"
+    android:layout_height="wrap_content">
+
+    <ImageView
+        android:id="@+id/list_item_bird_sound_play_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_action_play"/>
+
+
+    <LinearLayout
+        android:layout_toLeftOf="@id/list_item_bird_sound_play_iv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/list_item_bird_sound_type_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:textStyle="bold"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/list_item_bird_sound_loc_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/padding_small"
+            android:layout_gravity="left"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <TextView
+            android:id="@+id/list_item_bird_sound_author_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textStyle="italic"
+            android:paddingTop="@dimen/padding_small"
+ />
+
+
+    </LinearLayout>
+
+
+
+
+</RelativeLayout>

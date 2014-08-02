@@ -7,12 +7,14 @@ import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
 
 import com.sobremesa.birdwatching.BAMConstants;
@@ -20,6 +22,7 @@ import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.database.BirdSoundTable;
 import com.sobremesa.birdwatching.fragments.BirdDescriptionFragment;
 import com.sobremesa.birdwatching.fragments.BirdImagePagerFragment;
+import com.sobremesa.birdwatching.fragments.BirdSoundsDialogFragment;
 import com.sobremesa.birdwatching.managers.LocationManager;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdSound;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
@@ -61,6 +64,7 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
     private DownloadBirdSoundsTask mDownloadBirdSoundsTask;
 
+    private boolean mIsHasBirdSounds = false;
 
 
     @Override
@@ -122,6 +126,9 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.bird, menu);
 
+        MenuItem soundMenuItem = menu.findItem(R.id.action_sounds);
+        soundMenuItem.setVisible(mIsHasBirdSounds);
+
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -131,6 +138,13 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
         switch (item.getItemId())
         {
+            case R.id.action_sounds:
+
+                FragmentManager fm = getSupportFragmentManager();
+                BirdSoundsDialogFragment dialog = BirdSoundsDialogFragment.newInstance(mBird);
+                dialog.setCancelable(true);
+                dialog.show(fm, BirdSoundsDialogFragment.class.getCanonicalName());
+                break;
             case R.id.action_map:
                 Intent intent = new Intent(this, BirdMapActivity.class);
                 Bundle extras = new Bundle();
@@ -139,6 +153,7 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
                 startActivity(intent);
 
                 break;
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -220,10 +235,16 @@ public class BirdActivity extends FragmentActivity implements LoaderManager.Load
 
         switch (loader.getId()) {
             case BAMConstants.BIRD_SOUND_LOADER_ID:
+
+                mIsHasBirdSounds = false;
+
                 if( cursor != null )
                 {
-                    Log.d("bird sound count", cursor.getCount() + "");
+                    if( cursor.getCount() > 0 )
+                        mIsHasBirdSounds = true;
                 }
+
+                invalidateOptionsMenu();
                 break;
         }
 
