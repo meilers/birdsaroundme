@@ -101,8 +101,88 @@ public class SightingSynchronizer extends BaseSynchronizer<RemoteSighting>{
     }
 
     @Override
-    protected boolean isRemoteEntityNewerThanLocal(RemoteSighting remote, Cursor c) {
-        return true;
+    protected boolean isRemoteEntityNewerThanLocal(RemoteSighting remoteSighting, Cursor c) {
+
+        boolean isNewer = false;
+
+        // LOCAL
+        String localComName = c.getString(c.getColumnIndex(SightingTable.COM_NAME));
+        String localSciName = c.getString(c.getColumnIndex(SightingTable.SCI_NAME));
+        Integer localHowMany = c.getInt(c.getColumnIndex(SightingTable.HOW_MANY));
+        Double localLat = c.getDouble(c.getColumnIndex(SightingTable.LAT));
+        Double localLng = c.getDouble(c.getColumnIndex(SightingTable.LNG));
+        String localLocId = c.getString(c.getColumnIndex(SightingTable.LOC_ID));
+        String localLocName = c.getString(c.getColumnIndex(SightingTable.LOC_NAME));
+        Integer localLocPrivate = c.getInt(c.getColumnIndex(SightingTable.LOCATION_PRIVATE));
+        String localObsDt = c.getString(c.getColumnIndex(SightingTable.OBS_DT));
+        Integer localObsReviewed = c.getInt(c.getColumnIndex(SightingTable.OBS_REVIEWED));
+        Integer localObsValid = c.getInt(c.getColumnIndex(SightingTable.OBS_VALID));
+
+        // REMOTE
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "yyyy-MM-dd HH:mm", Locale.getDefault());
+
+        String sciName = remoteSighting.getSciName();
+        String locId = remoteSighting.getLocID();
+        String obsDt = remoteSighting.getObsDt();
+        Date date = null;
+
+        try {
+            date = dateFormat.parse(obsDt);
+
+        } catch (Exception e) {
+            date = new Date();
+        }
+
+        String comName = remoteSighting.getComName();
+        String locName = remoteSighting.getLocName();
+        Integer howMany = remoteSighting.getHowMany();
+        Double lat = remoteSighting.getLat();
+        Double lng = remoteSighting.getLng();
+        Boolean locPrivate = remoteSighting.getLocationPrivate();
+        Boolean obsReviewed = remoteSighting.getObsReviewed();
+        Boolean obsValid = remoteSighting.getObsValid();
+
+
+        // compare
+        if( localComName == null && comName == null && !localComName.equals(comName) )
+            isNewer = true;
+
+        if( localSciName == null && sciName == null && !localSciName.equals(sciName) )
+            isNewer = true;
+
+        if( localHowMany == null && howMany == null && !localHowMany.equals(howMany) )
+            isNewer = true;
+
+        if( localLat == null && lat == null && !lat.equals(localLat) )
+            isNewer = true;
+
+        if( localLng == null && lng == null && !localLng.equals(lng) )
+            isNewer = true;
+
+        if( localLocId == null && locId == null && !localLocId.equals(locId) )
+            isNewer = true;
+
+        if( localLocName == null && locName == null && !localLocName.equals(locName) )
+            isNewer = true;
+
+        if( localObsDt == null && obsDt == null && !localObsDt.equals(obsDt) )
+            isNewer = true;
+
+        if( localLocPrivate == null && locPrivate == null && !localLocPrivate.equals(locPrivate) )
+            isNewer = true;
+
+
+        if( localObsReviewed == null && obsReviewed == null && !localObsReviewed.equals(obsReviewed) )
+            isNewer = true;
+
+        if( localObsValid == null && obsValid == null && !localObsValid.equals(obsValid) )
+            isNewer = true;
+
+
+        Log.d("obs", isNewer ? "yes" : "no");
+
+        return isNewer;
     }
 
     @Override

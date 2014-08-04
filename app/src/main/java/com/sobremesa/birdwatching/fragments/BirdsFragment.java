@@ -11,7 +11,7 @@ import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.activities.BirdActivity;
 import com.sobremesa.birdwatching.activities.MainActivity;
 import com.sobremesa.birdwatching.adapters.BirdsAdapter;
-import com.sobremesa.birdwatching.adapters.SortByAdapter;
+import com.sobremesa.birdwatching.adapters.SettingsAdapter;
 import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.listeners.LocationListener;
 import com.sobremesa.birdwatching.listeners.SettingsListener;
@@ -25,7 +25,6 @@ import com.sobremesa.birdwatching.services.BirdImageService;
 import com.sobremesa.birdwatching.tasks.DownloadSightingsTask;
 import com.sobremesa.birdwatching.tasks.PopulateBirdImagesTask;
 import com.sobremesa.birdwatching.util.AnalyticsUtil;
-import com.sobremesa.birdwatching.views.SoftKeyboardHandledLinearLayout;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
@@ -36,12 +35,12 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -80,6 +79,8 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
     private PopulateBirdImagesTask mPopulateImagesTask;
 
     private AlertDialog mAlertDialog;
+
+    private boolean mIsCanRateApp = false;
 
     private final BroadcastReceiver mImageBirdReceiver = new BroadcastReceiver() {
 
@@ -176,34 +177,24 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
         setHasOptionsMenu(true);
 
-		return view;
-	}
-	
-	@Override
-	public void onStart() {
-		super.onStart();
-
         IntentFilter filter = new IntentFilter();
         filter.addAction(BAMConstants.RELOAD_BIRD_IMAGES_BROADCAST_ACTION);
         getActivity().registerReceiver(mImageBirdReceiver, filter);
 
-		getLoaderManager().initLoader(BAMConstants.SIGHTING_LOADER_ID, null, this);
-
-        syncBirds();
-
+        getLoaderManager().initLoader(BAMConstants.SIGHTING_LOADER_ID, null, this);
 
         LocationManager.INSTANCE.addLocationListener(this);
         SettingsManager.INSTANCE.addSettingsListener(this);
 
-        AnalyticsUtil.sendView(TAG);
+
+		return view;
 	}
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onDestroyView() {
+        super.onDestroyView();
 
         getActivity().unregisterReceiver(mImageBirdReceiver);
-
 
         if( mDownloadSightingsTask != null )
         {
@@ -220,6 +211,13 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         LocationManager.INSTANCE.removeLocationListener(this);
         SettingsManager.INSTANCE.removeSettingsListener(this);
     }
+
+    @Override
+	public void onStart() {
+		super.onStart();
+
+        AnalyticsUtil.sendView(TAG);
+	}
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -286,6 +284,12 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                 }
             }
         });
+
+
+        // Rate app
+        MenuItem rateMenuItem = menu.findItem(R.id.action_rate);
+        rateMenuItem.setVisible(mIsCanRateApp);
+
     }
 
 
@@ -302,6 +306,17 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
             case R.id.action_settings:
                 showSortByDialog();
+                break;
+
+
+            case R.id.action_rate:
+                final String appPackageName = getActivity().getPackageName(); // getPackageName() from Context or Activity object
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=" + appPackageName)));
+                } catch (android.content.ActivityNotFoundException anfe) {
+                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://play.google.com/store/apps/details?id=" + appPackageName)));
+                }
+
                 break;
 
 
@@ -394,6 +409,15 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
             if( act != null )
                 act.setTitle(cursor.getCount() + " Birds (within 50 km)");
 
+            // Update options menu
+            if( cursor.getCount() > 10 )
+                mIsCanRateApp = true;
+            else
+                mIsCanRateApp = false;
+
+            getActivity().invalidateOptionsMenu();
+
+
         }
 
 
@@ -476,7 +500,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
         Resources r = getActivity().getResources();
         String[] sortBys = r.getStringArray(R.array.sort_bys_array);
 
-        final SortByAdapter adapter = new SortByAdapter(getActivity(), R.layout.list_item_dialog_list_selection, sortBys );
+        final SettingsAdapter adapter = new SettingsAdapter(getActivity(), R.layout.list_item_dialog_list_selection, sortBys );
         adapter.setSelectedIndex(SettingsManager.INSTANCE.getSettings().getSortBy().ordinal());
 
 

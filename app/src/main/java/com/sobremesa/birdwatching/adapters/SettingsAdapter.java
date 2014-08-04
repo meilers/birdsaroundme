@@ -30,18 +30,25 @@ import com.sobremesa.birdwatching.R;
 /**
  * Created by omegatai on 2014-07-09.
  */
-public class SortByAdapter extends ArrayAdapter<String> {
+public class SettingsAdapter extends ArrayAdapter<String> {
 
     Context context;
     int layoutResourceId;
     String data[] = null;
     int selectedIndex = 0;
 
-    public SortByAdapter(Context context, int layoutResourceId, String[] data) {
+    public enum RowType {
+        LIST_ITEM, HEADER_ITEM
+    }
+
+
+    public SettingsAdapter(Context context, int layoutResourceId, String[] data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;
         this.data = data;
+
+
     }
 
     public void setSelectedIndex(int index){

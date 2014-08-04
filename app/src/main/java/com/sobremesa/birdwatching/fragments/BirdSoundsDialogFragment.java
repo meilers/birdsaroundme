@@ -153,6 +153,13 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
         return dialog;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        final Intent intent = new Intent(getActivity(), BirdSoundPlayer.class);
+        getActivity().stopService(intent);
+    }
 
     @Override
     public void onStart() {

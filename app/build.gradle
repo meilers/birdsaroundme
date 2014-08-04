@@ -23,7 +23,7 @@ android {
         applicationId "com.sobremesa.birdwatching"
         minSdkVersion 14
         targetSdkVersion 19
-        versionCode 20
+        versionCode 21
         versionName "1.5.2"
     }
     buildTypes {
