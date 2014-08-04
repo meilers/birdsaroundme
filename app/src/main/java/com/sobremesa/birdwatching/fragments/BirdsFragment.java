@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.BAMConstants;
@@ -17,6 +18,7 @@ import com.sobremesa.birdwatching.listeners.LocationListener;
 import com.sobremesa.birdwatching.listeners.SettingsListener;
 import com.sobremesa.birdwatching.managers.LocationManager;
 import com.sobremesa.birdwatching.managers.SettingsManager;
+import com.sobremesa.birdwatching.models.SettingType;
 import com.sobremesa.birdwatching.models.Settings;
 import com.sobremesa.birdwatching.models.SortByType;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
@@ -32,7 +34,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.location.Location;
 import android.net.Uri;
@@ -404,10 +405,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
             updateGridView(mSearchStr);
 
             // Update Title
-            MainActivity act = (MainActivity)getActivity();
-
-            if( act != null )
-                act.setTitle(cursor.getCount() + " Birds (within 50 km)");
+            updateTitle();
 
             // Update options menu
             if( cursor.getCount() > 10 )
@@ -426,6 +424,32 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
 
+    }
+
+    private void updateTitle()
+    {
+        // Update Title
+        MainActivity act = (MainActivity)getActivity();
+
+        int distance = 50;
+
+        switch (SettingsManager.INSTANCE.getSettings().getDistance() )
+        {
+            case FIFTY_KM:
+                distance = 50;
+                break;
+
+            case TWENTY_KM:
+                distance = 20;
+                break;
+
+            case FIVE_KM:
+                distance = 5;
+                break;
+        }
+
+        if( act != null )
+            act.setTitle(mBirds.size() + " Birds (within " + distance + " km)");
     }
 
 
@@ -492,57 +516,18 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
     private void showSortByDialog()
     {
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_list_selection, null);
+        View view = inflater.inflate(R.layout.dialog_settings, null);
 
         // ListView
         final ListView lv = (ListView) view.findViewById(R.id.dialog_list_selection_lv);
 
-        Resources r = getActivity().getResources();
-        String[] sortBys = r.getStringArray(R.array.sort_bys_array);
-
-        final SettingsAdapter adapter = new SettingsAdapter(getActivity(), R.layout.list_item_dialog_list_selection, sortBys );
-        adapter.setSelectedIndex(SettingsManager.INSTANCE.getSettings().getSortBy().ordinal());
+        final SettingsAdapter adapter = new SettingsAdapter(getActivity() );
+        adapter.setDistanceIndex(SettingsManager.INSTANCE.getSettings().getDistance().ordinal());
+        adapter.setSortByIndex(SettingsManager.INSTANCE.getSettings().getSortBy().ordinal());
 
 
         lv.setAdapter(adapter);
-        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                adapter.setSelectedIndex(position);
-                adapter.notifyDataSetChanged();
-
-                Settings set = SettingsManager.INSTANCE.getSettings();
-
-                final SortByType sort = SortByType.values()[position];
-                switch( sort )
-                {
-                    case DISTANCE:
-                        set.setSortBy(SortByType.DISTANCE);
-                        break;
-
-                    case NAME:
-                        set.setSortBy(SortByType.NAME);
-                        break;
-
-                    case DATE:
-                        set.setSortBy(SortByType.DATE);
-                        break;
-
-                    default:
-                        set.setSortBy(SortByType.DISTANCE);
-                        break;
-                }
-
-                SettingsManager.INSTANCE.setSettings(set);
-
-
-                mAlertDialog.dismiss();
-            }
-        });
-
-        TextView dialogTitleTv = (TextView) view.findViewById(R.id.dialog_list_selection_title_tv);
-        dialogTitleTv.setText("Sort By");
+        lv.setOnItemClickListener(adapter);
 
         if (this.getActivity().getWindow() != null) {
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -568,24 +553,35 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
 
     @Override
-    public void settingsEventReceived() {
-        switch (SettingsManager.INSTANCE.getSettings().getSortBy())
+    public void settingsEventReceived(SettingType type) {
+
+        if( type == SettingType.DISTANCE )
         {
-            case DATE:
-                Collections.sort(mBirds, new RemoteSighting.DateComparator());
-                break;
+            updateTitle();
 
-            case NAME:
-                Collections.sort(mBirds, new RemoteSighting.NameComparator());
-                break;
+            syncBirds();
+        }
+        else if( type == SettingType.SORT_BY )
+        {
+            switch (SettingsManager.INSTANCE.getSettings().getSortBy())
+            {
+                case DATE:
+                    Collections.sort(mBirds, new RemoteSighting.DateComparator());
+                    break;
 
-            case DISTANCE:
-                Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
-                break;
+                case NAME:
+                    Collections.sort(mBirds, new RemoteSighting.NameComparator());
+                    break;
+
+                case DISTANCE:
+                    Collections.sort(mBirds, new RemoteSighting.DistanceComparator());
+                    break;
+            }
+
+
+            mBirdsAdapter.notifyDataSetChanged();
         }
 
-
-        mBirdsAdapter.notifyDataSetChanged();
     }
 
 

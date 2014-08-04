@@ -3,8 +3,11 @@ package com.sobremesa.birdwatching.tasks;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.sobremesa.birdwatching.BAMApplication;
+import com.sobremesa.birdwatching.managers.SettingsManager;
+import com.sobremesa.birdwatching.models.DistanceType;
 import com.sobremesa.birdwatching.rest.DownloadSightingsClient;
 import com.sobremesa.birdwatching.database.SightingTable;
 import com.sobremesa.birdwatching.managers.EbirdApiClientManager;
@@ -33,7 +36,22 @@ public class DownloadSightingsTask extends AsyncTask<Double, Void, ArrayList<Rem
         DownloadSightingsClient client = EbirdApiClientManager.INSTANCE.getClient(context, DownloadSightingsClient.class);
 
         try {
-            ArrayList<RemoteSighting> sightings = client.downloadSightings(params[0], params[1], 50, 30, "json");
+            int distance = 50;
+            DistanceType distanceType = SettingsManager.INSTANCE.getSettings().getDistance();
+
+            Log.d("distance", distance + "");
+
+            switch (distanceType)
+            {
+                case TWENTY_KM:
+                    distance = 20;
+                    break;
+
+                case FIVE_KM:
+                    distance = 5;
+            }
+
+            ArrayList<RemoteSighting> sightings = client.downloadSightings(params[0], params[1], distance, 30, "json");
 
             Cursor localSightingCursor = context.getContentResolver().query(BAMContentProvider.Uris.SIGHTINGS_URI, SightingTable.ALL_COLUMNS, null, null, null);
             localSightingCursor.moveToFirst();
