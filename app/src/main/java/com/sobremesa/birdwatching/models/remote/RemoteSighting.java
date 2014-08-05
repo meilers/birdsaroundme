@@ -123,6 +123,7 @@ public class RemoteSighting extends RemoteObject implements Parcelable {
 
     private ArrayList<RemoteBirdImage> mImages = new ArrayList<RemoteBirdImage>();
 
+    private ArrayList<RemoteBirdSound> mSounds = new ArrayList<RemoteBirdSound>();
 
 
     @Override
@@ -130,15 +131,15 @@ public class RemoteSighting extends RemoteObject implements Parcelable {
         return sciName;
     }
 
-    @Override
-    public String getIdentifier2() {
-        return locID;
-    }
-
-    @Override
-    public String getIdentifier3() {
-        return obsDt;
-    }
+//    @Override
+//    public String getIdentifier2() {
+//        return locID;
+//    }
+//
+//    @Override
+//    public String getIdentifier3() {
+//        return obsDt;
+//    }
 
 
     public RemoteSighting() {}
@@ -185,6 +186,7 @@ public class RemoteSighting extends RemoteObject implements Parcelable {
         dest.writeInt(this.getObsValid() ? 1:0);
 
         dest.writeList(this.getImages());
+        dest.writeList(this.getSounds());
     }
 
 
@@ -203,6 +205,8 @@ public class RemoteSighting extends RemoteObject implements Parcelable {
         setObsValid(in.readInt() == 1);
 
         setImages(in.readArrayList(RemoteBirdImage.class.getClassLoader()));
+        setSounds(in.readArrayList(RemoteBirdSound.class.getClassLoader()));
+
     }
 
     public static Creator<RemoteSighting> CREATOR = new Creator<RemoteSighting>() {
@@ -313,5 +317,13 @@ public class RemoteSighting extends RemoteObject implements Parcelable {
 
     public void setImages(ArrayList<RemoteBirdImage> mImages) {
         this.mImages = mImages;
+    }
+
+    public ArrayList<RemoteBirdSound> getSounds() {
+        return mSounds;
+    }
+
+    public void setSounds(ArrayList<RemoteBirdSound> mSounds) {
+        this.mSounds = mSounds;
     }
 }

@@ -98,46 +98,21 @@ public class BirdImageService extends IntentService {
                 newTitle = Normalizer.normalize(newTitle, Normalizer.Form.NFKD);
                 newTitle = newTitle.replace("&", "%26");
 
-                url = "http://en.wikipedia.org/w/api.php?format=json&action=query&titles=" + newTitle + "&prop=images";
+                url = "http://en.wikipedia.org/w/api.php?format=json&action=query&titles=" + newTitle + "&generator=images&gimlimit=100&prop=imageinfo&iiprop=url";
 
                 if(Patterns.WEB_URL.matcher(url).matches())
                 {
                     String imageJson = getJsonResult(url);
 
-                    Pattern pattern1 = Pattern.compile("File:[^\"]*?jpg");
+                    Pattern pattern1 = Pattern.compile("\"url\":\"[^,]*?(jpg|jpeg|png)\"", Pattern.CASE_INSENSITIVE);
                     Matcher matcher1 = pattern1.matcher(imageJson);
-                    String filename = "";
 
                     i = 0;
 
                     while (matcher1.find()) {
-                        filename = matcher1.group();
-                        filename = filename.replace("File:", "");
-
-                        if (!filename.isEmpty()) {
-
-                            // Sanitize url
-                            String newFilename = filename.replace(" ", "%20");
-                            newFilename = newFilename.replace("&", "%26");
-
-                            url = "http://en.wikipedia.org/w/api.php?action=query&titles=Image:" + newFilename + "&prop=imageinfo&iiprop=url&format=json";
-
-                            if(Patterns.WEB_URL.matcher(url).matches())
-                            {
-                                String imageInfoJson = getJsonResult(url);
-
-                                Pattern pattern2 = Pattern.compile("\"url\":\".*?\"");
-                                Matcher matcher2 = pattern2.matcher(imageInfoJson);
-
-
-                                if (matcher2.find()) {
-                                    imageUrl = matcher2.group();
-                                    imageUrl = imageUrl.replace("\"url\":\"", "");
-                                    imageUrl = imageUrl.replace("\"", "");
-                                }
-                            }
-
-                        }
+                        imageUrl = matcher1.group();
+                        imageUrl = imageUrl.replace("\"url\":\"", "");
+                        imageUrl = imageUrl.replace("\"", "");
 
                         RemoteBirdImage birdImage = new RemoteBirdImage();
                         birdImage.setImageUrl(imageUrl);
@@ -147,6 +122,10 @@ public class BirdImageService extends IntentService {
 
                         ++i;
                     }
+
+                    // If no images, send info to analytics
+                    if( i == 0 )
+                        AnalyticsUtil.sendEvent("", AnalyticsUtil.Categories.BIRD_IMAGES, AnalyticsUtil.Actions.SYNC, "Error: No Image for com name: " + bird.getComName() );
 
                     // Save
                     Cursor localBirdImageCursor = context.getContentResolver().query(BAMContentProvider.Uris.BIRD_IMAGES_URI, BirdImageTable.ALL_COLUMNS, BirdImageTable.SCI_NAME + " = ?",

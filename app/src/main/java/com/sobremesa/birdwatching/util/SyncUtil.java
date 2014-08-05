@@ -18,12 +18,12 @@ import java.util.List;
  */
 public class SyncUtil {
 
-    public static void synchronizeRemoteSightings(List<RemoteSighting> remoteSightings, Cursor localSightings, int remoteIdentifierColumn, int remoteIdentifierColumn2, int remoteIdentifierColumn3, BaseSynchronizer<RemoteSighting> synchronizer,BasePreProcessor<RemoteSighting> preProcessor) {
+    public static void synchronizeRemoteSightings(List<RemoteSighting> remoteSightings, Cursor localSightings, int remoteIdentifierColumn, BaseSynchronizer<RemoteSighting> synchronizer,BasePreProcessor<RemoteSighting> preProcessor) {
 
         if( preProcessor != null )
             preProcessor.preProcessRemoteRecords(remoteSightings);
 
-        synchronizer.synchronize(BAMApplication.getContext(), remoteSightings, localSightings, remoteIdentifierColumn, remoteIdentifierColumn2, remoteIdentifierColumn3);
+        synchronizer.synchronize(BAMApplication.getContext(), remoteSightings, localSightings, remoteIdentifierColumn);
     }
 
     public static void synchronizeRemoteBirdImages(List<RemoteBirdImage> remoteBirdImages, Cursor localBirdImages, int remoteIdentifierColumn, BaseSynchronizer<RemoteBirdImage> synchronizer,BasePreProcessor<RemoteBirdImage> preProcessor) {

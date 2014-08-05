@@ -1,9 +1,10 @@
 package com.sobremesa.birdwatching.services;
 
-import android.app.IntentService;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -11,11 +12,17 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.View;
 
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.sobremesa.birdwatching.BAMApplication;
-import com.sobremesa.birdwatching.BAMConstants;
+import com.sobremesa.birdwatching.R;
+import com.sobremesa.birdwatching.activities.MainActivity;
 import com.sobremesa.birdwatching.models.SoundStateType;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdSound;
+import com.sobremesa.birdwatching.util.UiUtil;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,7 +31,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 /**
  * Created by omegatai on 2014-08-01.
  */
-public class BirdSoundPlayer extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener {
+public class BirdSoundPlayerService extends Service implements MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener {
 
     public final static class Extras
     {
@@ -75,6 +82,27 @@ public class BirdSoundPlayer extends Service implements MediaPlayer.OnCompletion
             }
         }
 
+//        ImageSize targetSize = new ImageSize(UiUtil.convertDpToPixels(24, this), UiUtil.convertDpToPixels(24,this));
+//        Notification note=new Notification(R.drawable.ic_launcher,
+//                "Can you hear the music?",
+//                System.currentTimeMillis());
+//        Intent i=new Intent(BirdSoundPlayerService.this, MainActivity.class);
+//
+//        i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|
+//                Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//
+//        PendingIntent pi=PendingIntent.getActivity(BirdSoundPlayerService.this, 0,
+//                i, 0);
+//
+//        note.setLatestEventInfo(BirdSoundPlayerService.this, "Fake Player",
+//                "Now Playing: \"Ummmm, Nothing\"",
+//                pi);
+//        note.flags|=Notification.FLAG_NO_CLEAR;
+//
+//        startForeground(1337, note);
+
+
+
         return START_NOT_STICKY;
     }
 
@@ -96,6 +124,8 @@ public class BirdSoundPlayer extends Service implements MediaPlayer.OnCompletion
             mMediaPlayer.release();
             mMediaPlayer = null;
         }
+
+        stopForeground(true);
     }
 
 
@@ -131,10 +161,10 @@ public class BirdSoundPlayer extends Service implements MediaPlayer.OnCompletion
 
 
                     uri = Uri.parse(sound.getFile());
-                    mMediaPlayer = MediaPlayer.create(BirdSoundPlayer.this, uri);
+                    mMediaPlayer = MediaPlayer.create(BirdSoundPlayerService.this, uri);
                     mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                    mMediaPlayer.setOnCompletionListener(BirdSoundPlayer.this);
-                    mMediaPlayer.setOnBufferingUpdateListener(BirdSoundPlayer.this);
+                    mMediaPlayer.setOnCompletionListener(BirdSoundPlayerService.this);
+                    mMediaPlayer.setOnBufferingUpdateListener(BirdSoundPlayerService.this);
                     mMediaPlayer.start();
 
                 } else {
@@ -202,7 +232,7 @@ public class BirdSoundPlayer extends Service implements MediaPlayer.OnCompletion
 
 
                         uri = Uri.parse(sound.getFile());
-                        mMediaPlayer.setDataSource(BirdSoundPlayer.this, uri);
+                        mMediaPlayer.setDataSource(BirdSoundPlayerService.this, uri);
                         mMediaPlayer.prepare();
                         mMediaPlayer.start();
                     } catch (IOException e) {

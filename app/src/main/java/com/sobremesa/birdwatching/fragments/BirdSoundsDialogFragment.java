@@ -19,7 +19,6 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.BAMConstants;
 import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.adapters.BirdSoundsAdapter;
@@ -28,11 +27,9 @@ import com.sobremesa.birdwatching.models.SoundStateType;
 import com.sobremesa.birdwatching.models.remote.RemoteBirdSound;
 import com.sobremesa.birdwatching.models.remote.RemoteSighting;
 import com.sobremesa.birdwatching.providers.BAMContentProvider;
-import com.sobremesa.birdwatching.services.BirdImageService;
-import com.sobremesa.birdwatching.services.BirdSoundPlayer;
+import com.sobremesa.birdwatching.services.BirdSoundPlayerService;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * Created by omegatai on 2014-07-31.
@@ -61,10 +58,10 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            if(action.equals(BirdSoundPlayer.Actions.ACTION_BROADCAST_PLAY_STATE)){
+            if(action.equals(BirdSoundPlayerService.Actions.ACTION_BROADCAST_PLAY_STATE)){
 
-                mPlayingSoundId = intent.getExtras().getString(BirdSoundPlayer.Extras.BROADCAST_PLAYING_SOUND_ID);
-                mPlayingSoundStateType = SoundStateType.values()[intent.getExtras().getInt(BirdSoundPlayer.Extras.BROADCAST_PLAY_STATE)];
+                mPlayingSoundId = intent.getExtras().getString(BirdSoundPlayerService.Extras.BROADCAST_PLAYING_SOUND_ID);
+                mPlayingSoundStateType = SoundStateType.values()[intent.getExtras().getInt(BirdSoundPlayerService.Extras.BROADCAST_PLAY_STATE)];
 
                 if( mPlayingSoundStateType != SoundStateType.PLAYING && mPlayingSoundStateType != SoundStateType.BUFFERING )
                     mPlayingSoundId = null;
@@ -128,14 +125,14 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
                     ArrayList<RemoteBirdSound> soundsQueued = new ArrayList<RemoteBirdSound>(mBirdSounds.subList(position, mBirdSounds.size()));
 
                     RemoteBirdSound sound = soundsQueued.get(0);
-                    final Intent intent = new Intent(getActivity(), BirdSoundPlayer.class);
+                    final Intent intent = new Intent(getActivity(), BirdSoundPlayerService.class);
                     getActivity().stopService(intent);
 
                     if( !sound.getBirdSoundId().equals(mPlayingSoundId))
                     {
                         Log.d("starting SERVICE", "fdsfsd");
-                        intent.putParcelableArrayListExtra(BirdSoundPlayer.Extras.BIRD_SOUNDS, soundsQueued);
-                        intent.setAction(BirdSoundPlayer.Actions.ACTION_PLAY);
+                        intent.putParcelableArrayListExtra(BirdSoundPlayerService.Extras.BIRD_SOUNDS, soundsQueued);
+                        intent.setAction(BirdSoundPlayerService.Actions.ACTION_PLAY);
                         getActivity().startService(intent);
                     }
 
@@ -157,7 +154,7 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
     public void onDestroyView() {
         super.onDestroyView();
 
-        final Intent intent = new Intent(getActivity(), BirdSoundPlayer.class);
+        final Intent intent = new Intent(getActivity(), BirdSoundPlayerService.class);
         getActivity().stopService(intent);
     }
 
@@ -166,7 +163,7 @@ public class BirdSoundsDialogFragment extends DialogFragment implements LoaderMa
         super.onStart();
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(BirdSoundPlayer.Actions.ACTION_BROADCAST_PLAY_STATE);
+        filter.addAction(BirdSoundPlayerService.Actions.ACTION_BROADCAST_PLAY_STATE);
         getActivity().registerReceiver(mBirdSoundStateReceiver, filter);
 
         getActivity().getSupportLoaderManager().initLoader(BAMConstants.BIRD_SOUND_LOADER_ID, null, this);

@@ -6,6 +6,7 @@ package com.sobremesa.birdwatching;
 public class BAMConstants {
 
     public final static String DISTANCE_PREF = "distance";
+    public final static String DATE_PREF = "date";
     public final static String SORT_PREF = "sort";
 
     public final static String RELOAD_BIRD_IMAGES_BROADCAST_ACTION = "com.sobremesa.birdwatching.RELOAD_BIRD_IMAGES";

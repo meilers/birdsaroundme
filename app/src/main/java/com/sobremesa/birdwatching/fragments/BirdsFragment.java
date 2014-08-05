@@ -448,8 +448,21 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
                 break;
         }
 
+        String daysTitle = "30 days";
+
+        switch (SettingsManager.INSTANCE.getSettings().getDate() )
+        {
+            case SEVEN_DAYS:
+                daysTitle = "7 days";
+                break;
+
+            case ONE_DAY:
+                daysTitle = "1 day";
+                break;
+        }
+
         if( act != null )
-            act.setTitle(mBirds.size() + " Birds (within " + distance + " km)");
+            act.setTitle(mBirds.size() + " Birds (" + distance + " km, " + daysTitle + ")");
     }
 
 
@@ -523,6 +536,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
 
         final SettingsAdapter adapter = new SettingsAdapter(getActivity() );
         adapter.setDistanceIndex(SettingsManager.INSTANCE.getSettings().getDistance().ordinal());
+        adapter.setDateIndex(SettingsManager.INSTANCE.getSettings().getDate().ordinal());
         adapter.setSortByIndex(SettingsManager.INSTANCE.getSettings().getSortBy().ordinal());
 
 
@@ -555,7 +569,7 @@ public class BirdsFragment extends Fragment implements LoaderCallbacks<Cursor>, 
     @Override
     public void settingsEventReceived(SettingType type) {
 
-        if( type == SettingType.DISTANCE )
+        if( type == SettingType.DISTANCE || type == SettingType.DATE )
         {
             updateTitle();
 

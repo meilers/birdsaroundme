@@ -40,11 +40,15 @@ public class BirdsAdapter extends BaseAdapter
 
     private List<RemoteSighting> mBirdList;
 
+    private int mRandomNumber = 0;
+
 
     public BirdsAdapter(Context context, List<RemoteSighting> birdList ) {
         this.mContext = context;
         this.mBirdList = birdList;
 
+        Random r = new Random();
+        this.mRandomNumber = r.nextInt(5);
     }
 
 
@@ -90,12 +94,7 @@ public class BirdsAdapter extends BaseAdapter
         List<RemoteBirdImage> images = bird.getImages();
         if( images != null && images.size() > 0 )
         {
-            int i = 0;
-
-//            if( images.size() > 1 ) {
-//                Random r = new Random();
-//                i = r.nextInt(images.size() - 1);
-//            }
+            int i = Math.min(this.mRandomNumber, images.size()-1);
 
             RemoteBirdImage image = images.get(i);
             final String imageUrl = image.getImageUrl();

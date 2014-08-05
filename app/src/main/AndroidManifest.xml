@@ -49,7 +49,7 @@
         </service>
 
         <service
-            android:name=".services.BirdSoundPlayer" >
+            android:name=".services.BirdSoundPlayerService" >
             <intent-filter>
                 <action android:name=".services.PLAY" />
                 <action android:name=".services.PAUSE" />

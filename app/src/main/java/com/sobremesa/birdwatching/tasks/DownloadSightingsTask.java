@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.sobremesa.birdwatching.BAMApplication;
 import com.sobremesa.birdwatching.managers.SettingsManager;
+import com.sobremesa.birdwatching.models.DateType;
 import com.sobremesa.birdwatching.models.DistanceType;
 import com.sobremesa.birdwatching.rest.DownloadSightingsClient;
 import com.sobremesa.birdwatching.database.SightingTable;
@@ -39,8 +40,6 @@ public class DownloadSightingsTask extends AsyncTask<Double, Void, ArrayList<Rem
             int distance = 50;
             DistanceType distanceType = SettingsManager.INSTANCE.getSettings().getDistance();
 
-            Log.d("distance", distance + "");
-
             switch (distanceType)
             {
                 case TWENTY_KM:
@@ -51,12 +50,32 @@ public class DownloadSightingsTask extends AsyncTask<Double, Void, ArrayList<Rem
                     distance = 5;
             }
 
-            ArrayList<RemoteSighting> sightings = client.downloadSightings(params[0], params[1], distance, 30, "json");
+            int date = 30;
+            DateType dateType = SettingsManager.INSTANCE.getSettings().getDate();
+
+            switch (dateType)
+            {
+                case SEVEN_DAYS:
+                    Log.d("daaaaate", "7");
+                    date = 7;
+                    break;
+
+                case ONE_DAY:
+                    Log.d("daaaaate", "1");
+                    date = 1;
+            }
+
+            ArrayList<RemoteSighting> sightings = client.downloadSightings(params[0], params[1], distance, date, "json");
+
+            Log.d("daaaaaate size", sightings.size()+"");
+            Log.d("daaaaaate size", sightings.size()+"");
+
+            Log.d("daaaaaate size", sightings.size()+"");
 
             Cursor localSightingCursor = context.getContentResolver().query(BAMContentProvider.Uris.SIGHTINGS_URI, SightingTable.ALL_COLUMNS, null, null, null);
             localSightingCursor.moveToFirst();
             SyncUtil.synchronizeRemoteSightings(sightings, localSightingCursor,
-                    localSightingCursor.getColumnIndex(SightingTable.SCI_NAME), localSightingCursor.getColumnIndex(SightingTable.LOC_ID), localSightingCursor.getColumnIndex(SightingTable.OBS_DT),
+                    localSightingCursor.getColumnIndex(SightingTable.SCI_NAME),
                     new SightingSynchronizer(context), null);
             localSightingCursor.close();
 

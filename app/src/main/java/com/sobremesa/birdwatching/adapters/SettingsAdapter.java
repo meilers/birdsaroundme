@@ -30,6 +30,7 @@ import android.widget.TextView;
 
 import com.sobremesa.birdwatching.R;
 import com.sobremesa.birdwatching.managers.SettingsManager;
+import com.sobremesa.birdwatching.models.DateType;
 import com.sobremesa.birdwatching.models.DistanceType;
 import com.sobremesa.birdwatching.models.Settings;
 import com.sobremesa.birdwatching.models.SortByType;
@@ -74,11 +75,35 @@ public class SettingsAdapter extends BaseAdapter implements AdapterView.OnItemCl
 
                 SettingsManager.INSTANCE.setDistance(distance);
             }
+            else if( position < DistanceType.values().length + DateType.values().length + 2)  {
+                DateType date = DateType.THIRTY_DAYS;
+
+                switch (position - DistanceType.values().length - 2) {
+                    case 0:
+                        date = DateType.THIRTY_DAYS;
+                        setDateIndex(0);
+                        break;
+
+                    case 1:
+                        date = DateType.SEVEN_DAYS;
+                        setDateIndex(1);
+                        break;
+
+                    case 2:
+                        date = DateType.ONE_DAY;
+                        setDateIndex(2);
+                        break;
+                }
+
+                SettingsManager.INSTANCE.setDate(date);
+
+
+            }
             else
             {
                 SortByType sort = SortByType.DISTANCE;
 
-                switch (position-DistanceType.values().length-2) {
+                switch (position-DistanceType.values().length-DateType.values().length-3) {
                     case 0:
                         sort = SortByType.DISTANCE;
                         setSortByIndex(0);
@@ -108,13 +133,14 @@ public class SettingsAdapter extends BaseAdapter implements AdapterView.OnItemCl
     }
 
     public enum SettingsListItemType {
-        DISTANCE_50, DISTANCE_20, DISTANCE_5, SORT_BY_DISTANCE, SORT_BY_DATE, SORT_BY_NAME
+        DISTANCE_50, DISTANCE_20, DISTANCE_5, DATE_30, DATE_7, DATE_1, SORT_BY_DISTANCE, SORT_BY_DATE, SORT_BY_NAME
     }
 
     private Context mContext;
     private LayoutInflater mInflater;
     private List<Item> mItems;
     private int mDistanceIndex = 0;
+    private int mDateIndex = 0;
     private int mSortByIndex = 0;
 
     public enum RowType {
@@ -177,6 +203,10 @@ public class SettingsAdapter extends BaseAdapter implements AdapterView.OnItemCl
         this.mDistanceIndex = distanceIndex;
     }
 
+    public void setDateIndex(int dateIndex) {
+        this.mDateIndex = dateIndex;
+    }
+
     public void setSortByIndex(int sortByIndex) {
         this.mSortByIndex = sortByIndex;
     }
@@ -187,17 +217,17 @@ public class SettingsAdapter extends BaseAdapter implements AdapterView.OnItemCl
         mItems.add(new ListItem("20 km", SettingsListItemType.DISTANCE_20));
         mItems.add(new ListItem("5 km", SettingsListItemType.DISTANCE_5));
 
+        mItems.add(new Header("Date Of Observation"));
+        mItems.add(new ListItem("30 days", SettingsListItemType.DATE_30));
+        mItems.add(new ListItem("7 days", SettingsListItemType.DATE_7));
+        mItems.add(new ListItem("1 day", SettingsListItemType.DATE_1));
+
         mItems.add(new Header("Sort By"));
         mItems.add(new ListItem("Distance", SettingsListItemType.SORT_BY_DISTANCE));
         mItems.add(new ListItem("Date", SettingsListItemType.SORT_BY_DATE));
         mItems.add(new ListItem("Name", SettingsListItemType.SORT_BY_NAME));
 
 
-    }
-
-    static class PlaceHolder {
-        TextView txtTitle;
-        RadioButton rb;
     }
 
 
@@ -276,6 +306,9 @@ public class SettingsAdapter extends BaseAdapter implements AdapterView.OnItemCl
             if( mSettingsListItemType == SettingsListItemType.DISTANCE_50 && mDistanceIndex == 0 ||
                     mSettingsListItemType == SettingsListItemType.DISTANCE_20 && mDistanceIndex == 1 ||
                     mSettingsListItemType == SettingsListItemType.DISTANCE_5 && mDistanceIndex == 2 ||
+                    mSettingsListItemType == SettingsListItemType.DATE_30 && mDateIndex == 0 ||
+                    mSettingsListItemType == SettingsListItemType.DATE_7 && mDateIndex == 1 ||
+                    mSettingsListItemType == SettingsListItemType.DATE_1 && mDateIndex == 2 ||
                     mSettingsListItemType == SettingsListItemType.SORT_BY_DISTANCE && mSortByIndex == 0 ||
                     mSettingsListItemType == SettingsListItemType.SORT_BY_DATE && mSortByIndex == 1 ||
                     mSettingsListItemType == SettingsListItemType.SORT_BY_NAME && mSortByIndex == 2 )

@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center"
-    android:padding="@dimen/padding_large"
-    android:minHeight="45dp"  >
+    android:padding="@dimen/padding_medium"
+    android:minHeight="40dp"  >
 
     <TextView
         android:id="@+id/list_item_settings_header_tv"
@@ -12,8 +12,7 @@
         android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:gravity="center"
-
-        android:textAppearance="?android:attr/textAppearanceMedium"/>
+        android:textStyle="bold"/>
 
 
 </RelativeLayout>

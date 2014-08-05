@@ -182,7 +182,7 @@ public class SightingSynchronizer extends BaseSynchronizer<RemoteSighting>{
 
         Log.d("obs", isNewer ? "yes" : "no");
 
-        return isNewer;
+        return true;
     }
 
     @Override
